@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TableSkeleton } from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Check, X, Info } from 'lucide-react';
+import { Check, X, Info, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getUserName, getCategoryName } from '@/lib/helpers';
 import type { Business } from '@/types';
@@ -17,10 +17,12 @@ export default function PendingApprovals() {
   const [search, setSearch] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
+  const [documentOpen, setDocumentOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<{ url: string; type: string } | null>(null);
   const { toast } = useToast();
 
   const { data, isLoading } = useBusinesses({ approvalStatus: 'pending', search: search || undefined });
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
   const approveMutation = useApproveBusiness();
   const rejectMutation = useRejectBusiness();
@@ -28,6 +30,22 @@ export default function PendingApprovals() {
 
   const users = userData?.items || userData?.data?.items || [];
   const categories = categoryData?.items || categoryData?.data?.items || [];
+
+  const handleViewDocument = (business: Business) => {
+    if (business.verification?.document?.file?.url) {
+      setSelectedDocument({
+        url: business.verification.document.file.url,
+        type: business.verification.document.type || 'document'
+      });
+      setDocumentOpen(true);
+    } else {
+      toast({
+        title: "No Document",
+        description: "No verification document available for this business",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -67,6 +85,44 @@ export default function PendingApprovals() {
         </DialogContent>
       </Dialog>
 
+      {/* Document Dialog */}
+      <Dialog open={documentOpen} onOpenChange={setDocumentOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Verification Document</DialogTitle>
+          </DialogHeader>
+          {selectedDocument && (
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600">
+                Document Type: <span className="font-medium">{selectedDocument.type}</span>
+              </div>
+              <div className="border rounded-lg overflow-hidden">
+                <img 
+                  src={selectedDocument.url} 
+                  alt="Verification Document" 
+                  className="w-full h-auto max-h-[70vh] object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                    e.currentTarget.alt = 'Document not available';
+                  }}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open(selectedDocument.url, '_blank')}
+                >
+                  Open in New Tab
+                </Button>
+                <Button variant="secondary" onClick={() => setDocumentOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <div className="rounded-xl border bg-card card-shadow">
         <div className="p-5 border-b border-border">
           <DataTableHeader searchValue={search} onSearchChange={setSearch} searchPlaceholder="Search pending businesses..." />
@@ -83,11 +139,12 @@ export default function PendingApprovals() {
                 <TableHead>Payment Mode</TableHead>
                 <TableHead>Payment Status</TableHead>
                 <TableHead>Verification</TableHead>
+                <TableHead>Documents</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableSkeleton cols={9} /> : data?.data?.items?.map((b) => (
+              {isLoading ? <TableSkeleton cols={10} /> : data?.data?.items?.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
@@ -95,7 +152,23 @@ export default function PendingApprovals() {
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell className="font-semibold">₹{b.paymentDetails?.amount?.toLocaleString() || 'N/A'}</TableCell>
                   <TableCell className="uppercase text-xs font-medium text-muted-foreground">{b.paymentDetails?.paymentMode || 'N/A'}</TableCell>
-                  <TableCell><StatusBadge status={b.paymentDetails?.paymentStatus || 'pending'} /></TableCell>                  <TableCell><StatusBadge status={b.verification?.status} /></TableCell>
+                  <TableCell><StatusBadge status={b.paymentDetails?.paymentStatus || 'pending'} /></TableCell>
+                  <TableCell><StatusBadge status={b.verification?.status} /></TableCell>
+                  <TableCell>
+                    {b.verification?.document?.file?.url ? (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleViewDocument(b)}
+                        title="View Document"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-gray-400">No doc</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
@@ -123,7 +196,7 @@ export default function PendingApprovals() {
                 </TableRow>
               ))}
               {!isLoading && (!data?.data?.items || data.data.items.length === 0) && (
-                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No pending approvals</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No pending approvals</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

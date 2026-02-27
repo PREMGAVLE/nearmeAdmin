@@ -3,10 +3,10 @@ import type { Lead, PaginatedResponse, LeadFilters } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const leadService = {
-  getAll: async (params?: LeadFilters): Promise<PaginatedResponse<Lead>> => {
-    const response = await apiClient.get('/leads', { params });
-return response.data.data;
-  },
+ getAll: async (params?: LeadFilters): Promise<PaginatedResponse<Lead>> => {
+  const response = await apiClient.get('/leads/admin', { params });
+  return response.data;
+},
 
   getById: async (id: string): Promise<Lead> => {
     const response = await apiClient.get(`/leads/${id}`);

@@ -20,8 +20,8 @@ export default function PaymentsPage() {
   const { toast } = useToast();
 
   const { data: stats, isLoading: statsLoading } = useDashboardStats('super_admin');
-  const { data: businessesData, isLoading } = useBusinesses({ ...filters, search: search || undefined, limit: 1000 });
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: businessesData, isLoading } = useBusinesses({ ...filters, search: search || undefined, limit: 100 });
+  const { data: userData } = useUsers({ limit: 100 });
 
   const users = userData?.data || [];
   const businesses = businessesData?.data || [];

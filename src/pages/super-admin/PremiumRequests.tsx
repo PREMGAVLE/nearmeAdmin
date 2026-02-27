@@ -18,7 +18,7 @@ export default function PremiumRequestsPage() {
   const { toast } = useToast();
 
   const { data, isLoading } = useBusinesses({ premiumRequestStatus: 'premium_requested' });
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
   const approveMutation = useApprovePremiumRequest();
   const rejectMutation = useRejectPremiumRequest();

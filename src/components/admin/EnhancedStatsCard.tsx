@@ -1,6 +1,6 @@
 import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 
-interface StatsCardProps {
+interface EnhancedStatsCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
@@ -11,9 +11,9 @@ interface StatsCardProps {
   subtitle?: string;
 }
 
-export function StatsCard({ 
+export function EnhancedStatsCard({ 
   title, value, icon: Icon, variant, trend, trendUp, sparklineData, subtitle 
-}: StatsCardProps) {
+}: EnhancedStatsCardProps) {
   const variantStyles = {
     default: 'bg-blue-50 text-blue-600 border-blue-200',
     success: 'bg-green-50 text-green-600 border-green-200',

@@ -3,10 +3,10 @@ import type { Booking, PaginatedResponse, BookingFilters } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const bookingService = {
-  getAll: async (params?: BookingFilters): Promise<PaginatedResponse<Booking>> => {
-    const response = await apiClient.get('/bookings', { params });
-    return response.data;
-  },
+ getAll: async (params?: BookingFilters): Promise<PaginatedResponse<Booking>> => {
+  const response = await apiClient.get('/bookings/admin', { params });
+  return response.data;
+},
 
   getById: async (id: string): Promise<Booking> => {
     const response = await apiClient.get(`/bookings/${id}`);

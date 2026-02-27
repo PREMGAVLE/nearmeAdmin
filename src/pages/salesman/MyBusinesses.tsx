@@ -29,7 +29,7 @@ export default function MyBusinesses() {
   const [selectedOwner, setSelectedOwner] = useState<User | null>(null);
   const [editOwnerForm, setEditOwnerForm] = useState({ name: '', mobile: '', email: '', city: '' });
 
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
   const requestPremiumMutation = useRequestPremium();
   const activateSubMutation = useActivateSubscription();

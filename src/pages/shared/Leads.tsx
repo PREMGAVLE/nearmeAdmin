@@ -28,7 +28,7 @@ export default function LeadsPage() {
 
   const { data, isLoading } = useLeads({ ...filters, search: search || undefined });
   const { data: bizData } = useBusinesses({ limit: 100 });
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
   const updateStatusMutation = useUpdateLeadStatus();
   const bulkAssignMutation = useBulkAssignLeads();

@@ -6,7 +6,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { StatsSkeleton } from '@/components/TableSkeleton';
 import { Building2, Users, Crown, CreditCard, MessageSquare, CalendarCheck, TrendingUp, Target } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-
+import { useUsers } from '@/services/userService';
 const COLORS = ['hsl(263, 70%, 50%)', 'hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(0, 72%, 51%)', 'hsl(217, 91%, 60%)'];
 
 export default function ReportsPage() {
@@ -14,10 +14,14 @@ export default function ReportsPage() {
   const { data: bizData } = useBusinesses({ limit: 100 });
   const { data: leadData } = useLeads({ limit: 100 });
   const { data: bookingData } = useBookings({ limit: 100 });
-
-  const businesses = bizData?.data || [];
-  const leads = leadData?.data || [];
-  const bookings = bookingData?.data || [];
+  const { data: usersData } = useUsers({ limit: 100 });
+  const users = usersData?.data?.items || [];
+  const totalUsers = users.length;
+  const activeSubscriptions = users.filter(u => u.subscription?.status === 'active').length;
+const totalBusinesses = bizData?.data?.items?.length || 0;
+  const businesses = bizData?.data?.items || [];
+  const leads = leadData?.items || [];
+  const bookings = bookingData?.data?.items || [];
 
   // Approval breakdown
   const approvalData = [
@@ -28,7 +32,11 @@ export default function ReportsPage() {
 
   // Revenue by city
   const cityRevenue: Record<string, number> = {};
-  businesses.forEach(b => { cityRevenue[b.address.city] = (cityRevenue[b.address.city] || 0) + b.paymentDetails.amount; });
+  businesses.forEach(b => {
+    if (b.address?.city) {
+      cityRevenue[b.address.city] = (cityRevenue[b.address.city] || 0) + (b.paymentDetails?.amount || 0);
+    }
+  });
   const cityData = Object.entries(cityRevenue).map(([city, amount]) => ({ city, amount })).sort((a, b) => b.amount - a.amount);
 
   // Lead status
@@ -59,15 +67,14 @@ export default function ReportsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statsLoading ? <StatsSkeleton count={8} /> : stats && (
           <>
-            <StatsCard title="Total Users" value={12} icon={Users} variant="primary" />
-            <StatsCard title="Active Subscriptions" value={8} icon={Crown} variant="premium" />
-            <StatsCard title="Total Businesses" value={stats.totalBusinesses} icon={Building2} variant="info" />
-            <StatsCard title="Pending Approvals" value={stats.pendingApprovals} icon={TrendingUp} variant="warning" />
-            <StatsCard title="Premium Businesses" value={stats.premiumListings} icon={Crown} variant="premium" />
+            <StatsCard title="Total Users" value={totalUsers} icon={Users} variant="default" />
+            <StatsCard title="Active Subscriptions" value={activeSubscriptions} icon={Crown} variant="premium" />
+            <StatsCard title="Total Businesses" value={bizData?.data?.items?.length || 0} icon={Building2} variant="info" />
+            <StatsCard title="Pending Approvals" value={bizData?.data?.items?.filter(b => b.approvalStatus === 'pending').length} icon={TrendingUp} variant="warning" />
+            <StatsCard title="Premium Businesses" value={bizData?.data?.items?.filter(b => b.approvalStatus === 'approved').length} icon={Crown} variant="premium" />
             <StatsCard title="Total Leads" value={stats.totalLeads || 0} icon={MessageSquare} variant="success" />
             <StatsCard title="Conversion Rate" value={`${conversionRate}%`} icon={Target} variant="info" />
-            <StatsCard title="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} variant="success" />
-          </>
+            <StatsCard title="Total Revenue" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={CreditCard} variant="success" />          </>
         )}
       </div>
 

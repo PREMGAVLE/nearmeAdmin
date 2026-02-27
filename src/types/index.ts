@@ -150,7 +150,10 @@ export interface DashboardStats {
   totalLeadsTrend?: string;
   totalBookingsTrend?: string;
   premiumBusinessesTrend?: string;
+  premiumListingsTrend?: string;
   conversionRateTrend?: string;
+  totalSalesmenTrend?: string;
+  verifiedPaymentsTrend?: string;
 
 }
 

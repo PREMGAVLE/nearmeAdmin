@@ -21,7 +21,7 @@ export default function BookingsPage() {
   const { toast } = useToast();
 
   const { data, isLoading } = useBookings({ ...filters, search: search || undefined });
-  const { data: bizData } = useBusinesses({ limit: 1000 });
+  const { data: bizData } = useBusinesses({ limit: 100 });
   const updateStatusMutation = useUpdateBookingStatus();
   const updatePaymentMutation = useUpdateBookingPaymentStatus();
 

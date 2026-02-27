@@ -27,7 +27,7 @@ export default function AllBusinessesPage() {
   const { toast } = useToast();
 
   const { data, isLoading } = useBusinesses({ ...filters, search: search || undefined });
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
   const approveMutation = useApproveBusiness();
   const rejectMutation = useRejectBusiness();

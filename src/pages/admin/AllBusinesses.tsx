@@ -22,7 +22,7 @@ export default function AdminAllBusinesses() {
     ...filters, 
     search: search || undefined 
   });
-  const { data: userData } = useUsers({ limit: 1000 });
+  const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 }); // Keep for filter dropdown
   
   const approveMutation = useApproveBusiness();

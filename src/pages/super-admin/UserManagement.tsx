@@ -19,7 +19,15 @@ export default function UserManagement() {
   const [createOpen, setCreateOpen] = useState(false);
   const [subOpen, setSubOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', role: 'user' as UserRole });
+  const [formData, setFormData] = useState({
+    name: '',
+    mobile: '',
+    email: '',
+    role: 'user' as UserRole,
+    password: '',
+    confirmPassword: '',
+    acceptTerms: false
+  });
   const [subData, setSubData] = useState<Partial<Subscription>>({ planType: '', startDate: '', expiryDate: '', status: 'active' });
   const { toast } = useToast();
 
@@ -35,7 +43,15 @@ export default function UserManagement() {
       onSuccess: () => {
         toast({ title: 'User Created' });
         setCreateOpen(false);
-        setFormData({ name: '', mobile: '', email: '', role: 'user' });
+        setFormData({
+          name: '',
+          mobile: '',
+          email: '',
+          role: 'user',
+          password: '',
+          confirmPassword: '',
+          acceptTerms: false
+        });
       },
       onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed', variant: 'destructive' }),
     });
@@ -80,6 +96,36 @@ export default function UserManagement() {
                     <SelectItem value="user">User</SelectItem>
                   </SelectContent>
                 </Select>
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <Input
+                    type="password"
+                    value={formData.password}
+                    onChange={e => setFormData(p => ({ ...p, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirm Password</Label>
+                  <Input
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={e => setFormData(p => ({ ...p, confirmPassword: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onChange={e => setFormData(p => ({ ...p, acceptTerms: e.target.checked }))}
+                    required
+                  />
+                  <Label htmlFor="acceptTerms" className="text-sm">
+                    Accept Terms and Conditions
+                  </Label>
+                </div>
               </div>
               <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={createMutation.isPending}>
                 {createMutation.isPending ? 'Creating...' : 'Create User'}
@@ -161,13 +207,13 @@ export default function UserManagement() {
             </TableBody>
           </Table>
         </div>
-{data?.data?.pagination && data.data.pagination.totalPages > 1 && (<div className="flex items-center justify-between p-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">Page {data.data.pagination.page} of {data.data.pagination.totalPages}</p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={data.data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
-              <Button variant="outline" size="sm" disabled={data.data.pagination.page >= data.data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
-            </div>
+        {data?.data?.pagination && data.data.pagination.totalPages > 1 && (<div className="flex items-center justify-between p-4 border-t border-border">
+          <p className="text-sm text-muted-foreground">Page {data.data.pagination.page} of {data.data.pagination.totalPages}</p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={data.data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
+            <Button variant="outline" size="sm" disabled={data.data.pagination.page >= data.data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
           </div>
+        </div>
         )}
       </div>
     </div>
