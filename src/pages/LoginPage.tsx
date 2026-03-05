@@ -8,8 +8,8 @@ import { Building2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const demoAccounts = [
-  { label: 'Super Admin', mobile: '9876543210', password: 'admin123' },
-  { label: 'Admin', mobile: '9876543211', password: 'admin123' },
+  { label: 'Super Admin', mobile: '9329362271', password: 'password@93293' },
+  { label: 'Admin', mobile: '7898211358', password: 'Admin@7898' },
   { label: 'Salesman', mobile: '9876543212', password: 'admin123' },
 ];
 

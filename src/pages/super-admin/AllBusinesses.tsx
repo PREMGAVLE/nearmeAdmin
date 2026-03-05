@@ -91,9 +91,9 @@ export default function AllBusinessesPage() {
               <div className="border-t pt-3">
                 <p className="font-semibold text-foreground mb-2">Payment Details</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount.toLocaleString()}</p></div>
-                  <div><p className="text-muted-foreground">Mode</p><p className="font-medium uppercase">{selectedBiz.paymentDetails.paymentMode}</p></div>
-                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus} /></div>
+                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails?.amount?.toLocaleString() || 0}</p></div>
+                  <div><p className="text-muted-foreground">Mode</p><p className="font-medium uppercase">{selectedBiz.paymentDetails?.paymentMode || 'N/A'}</p></div>
+                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails?.paymentStatus || 'pending'} /></div>
                   <div><p className="text-muted-foreground">Verification</p><StatusBadge status={selectedBiz.verification.status} /></div>
                   {selectedBiz.paymentDetails.paymentNote && (
                     <div className="col-span-2"><p className="text-muted-foreground">Note</p><p className="font-medium">{selectedBiz.paymentDetails.paymentNote}</p></div>
@@ -196,7 +196,7 @@ export default function AllBusinessesPage() {
                   <TableCell><StatusBadge status={b.businessType} /></TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
-                  <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
+                  <TableCell><StatusBadge status={b.paymentDetails?.paymentStatus || 'pending'} /></TableCell>
                   <TableCell>
                     {b.isPremium ? <span className="text-xs font-semibold text-premium">★ {b.premiumSource}</span> : b.premiumRequestStatus === 'premium_requested' ? <StatusBadge status="premium_requested" /> : '—'}
                   </TableCell>
@@ -228,7 +228,7 @@ export default function AllBusinessesPage() {
                           </Button>
                         </>
                       )}
-                      {b.paymentDetails.paymentStatus === 'pending' && (
+                      {b.paymentDetails?.paymentStatus === 'pending' && (
                         <Button variant="ghost" size="sm" className="text-info" onClick={() => verifyPaymentMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Payment Verified' }) })} disabled={verifyPaymentMutation.isPending}>
                           Verify
                         </Button>

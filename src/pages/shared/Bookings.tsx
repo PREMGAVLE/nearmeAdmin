@@ -25,7 +25,7 @@ export default function BookingsPage() {
   const updateStatusMutation = useUpdateBookingStatus();
   const updatePaymentMutation = useUpdateBookingPaymentStatus();
 
-  const businesses = bizData?.data || [];
+  const businesses = bizData?.data?.items || [];
 
   const handleStatusChange = (id: string, bookingStatus: Booking['bookingStatus']) => {
     updateStatusMutation.mutate({ id, bookingStatus }, {
@@ -92,7 +92,7 @@ export default function BookingsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableSkeleton cols={7} /> : data?.data?.map((booking) => (
+              {isLoading ? <TableSkeleton cols={7} /> : data?.data?.items?.map((booking) => (
                 <TableRow key={booking._id}>
                   <TableCell className="font-medium">{getBusinessName(businesses, booking.businessId as string)}</TableCell>
                   <TableCell className="text-muted-foreground">{booking.customerName || '—'}</TableCell>
@@ -130,18 +130,18 @@ export default function BookingsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (!data?.data || data.data.length === 0) && (
+              {!isLoading && (!data?.data?.items || data.data.items.length === 0) && (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No bookings found</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
         </div>
-        {data?.pagination && data.pagination.totalPages > 1 && (
+        {data?.data?.pagination && data.data.pagination.totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">Page {data.pagination.page} of {data.pagination.totalPages}</p>
+            <p className="text-sm text-muted-foreground">Page {data.data.pagination.page} of {data.data.pagination.totalPages}</p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
-              <Button variant="outline" size="sm" disabled={data.pagination.page >= data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
+              <Button variant="outline" size="sm" disabled={data.data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
+              <Button variant="outline" size="sm" disabled={data.data.pagination.page >= data.data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
             </div>
           </div>
         )}

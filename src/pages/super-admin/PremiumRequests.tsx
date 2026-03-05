@@ -23,8 +23,8 @@ export default function PremiumRequestsPage() {
   const approveMutation = useApprovePremiumRequest();
   const rejectMutation = useRejectPremiumRequest();
 
-  const users = userData?.data || [];
-  const categories = categoryData?.data || [];
+  const users = userData?.data?.items || [];
+  const categories = categoryData?.data?.items || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -57,8 +57,8 @@ export default function PremiumRequestsPage() {
               </div>
               <div className="border-t pt-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount.toLocaleString()}</p></div>
-                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus} /></div>
+                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails?.amount?.toLocaleString() || 0}</p></div>
+                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails?.paymentStatus || 'pending'} /></div>
                 </div>
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function PremiumRequestsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableSkeleton cols={8} /> : data?.data?.map((b) => (
+              {isLoading ? <TableSkeleton cols={8} /> : data?.data?.items?.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
@@ -90,7 +90,7 @@ export default function PremiumRequestsPage() {
                   <TableCell><StatusBadge status={b.businessType} /></TableCell>
                   <TableCell className="text-muted-foreground">{getUserName(users, b.createdBy as string)}</TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
-                  <TableCell className="font-semibold">₹{b.paymentDetails.amount.toLocaleString()}</TableCell>
+                  <TableCell className="font-semibold">₹{b.paymentDetails?.amount?.toLocaleString() || 0}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
@@ -110,7 +110,7 @@ export default function PremiumRequestsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (!data?.data || data.data.length === 0) && (
+              {!isLoading && (!data?.data?.items || data.data.items.length === 0) && (
                 <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No premium requests</TableCell></TableRow>
               )}
             </TableBody>

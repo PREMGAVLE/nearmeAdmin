@@ -23,8 +23,8 @@ export default function PaymentsPage() {
   const { data: businessesData, isLoading } = useBusinesses({ ...filters, search: search || undefined, limit: 100 });
   const { data: userData } = useUsers({ limit: 100 });
 
-  const users = userData?.data || [];
-  const businesses = businessesData?.data || [];
+  const users = userData?.data?.items || [];
+  const businesses = businessesData?.data?.items || [];
   const verifyMutation = useVerifyPayment();
 
   return (
@@ -66,13 +66,13 @@ export default function PaymentsPage() {
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getUserName(users, b.createdBy as string)}</TableCell>
-                  <TableCell className="font-semibold">₹{b.paymentDetails.amount.toLocaleString()}</TableCell>
-                  <TableCell><Badge variant="secondary" className="uppercase text-xs">{b.paymentDetails.paymentMode}</Badge></TableCell>
-                  <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
+                  <TableCell className="font-semibold">₹{b.paymentDetails?.amount?.toLocaleString() || 0}</TableCell>
+                  <TableCell><Badge variant="secondary" className="uppercase text-xs">{b.paymentDetails?.paymentMode || 'N/A'}</Badge></TableCell>
+                  <TableCell><StatusBadge status={b.paymentDetails?.paymentStatus || 'pending'} /></TableCell>
                   <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex justify-end">
-                      {b.paymentDetails.paymentStatus === 'pending' && (
+                      {b.paymentDetails?.paymentStatus === 'pending' && (
                         <Button variant="ghost" size="sm" className="text-success gap-1"
                           onClick={() => verifyMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Payment Verified' }) })}
                           disabled={verifyMutation.isPending}>
