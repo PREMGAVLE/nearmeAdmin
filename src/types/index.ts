@@ -12,6 +12,28 @@ export interface Subscription {
   expiryDate?: string;
 }
 
+export interface UserActivity {
+  lastLogin?: string;
+  lastActivity?: string;
+  loginCount: number;
+  failedLoginAttempts: number;
+  loginHistory: LoginHistoryEntry[];
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpiry?: string;
+}
+
+export interface LoginHistoryEntry {
+  timestamp: string;
+  ip: string;
+  userAgent?: string;
+  status: 'success' | 'failed';
+  location?: {
+    country?: string;
+    city?: string;
+    timezone?: string;
+  };
+}
 // ===== User =====
 export interface User {
   _id: string;
@@ -26,6 +48,18 @@ export interface User {
   acceptTerms?: boolean;
   createdAt: string;
   updatedAt?: string;
+  activity?: UserActivity;
+  createdBy?: string | User;
+  notes?: string;
+  businessCount?: number;
+  leadCount?: number;
+  isDeleted?: boolean;
+  deletedAt?: string;
+  deletedBy?: string | User;
+  
+  // ✅ NEW: Related data for detailed view
+  recentBusinesses?: any[];
+  recentLeads?: any[];
 }
 
 // ===== Contact Numbers (nested in Business) =====
