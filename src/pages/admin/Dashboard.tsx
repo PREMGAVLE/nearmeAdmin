@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Building2, Users, ClipboardCheck, DollarSign, Target, Phone, 
+  Building2, Users, ClipboardCheck, DollarSign, Target, Phone,
   BookOpen, Crown, Calendar, TrendingUp, Activity
 } from 'lucide-react';
 import { useDashboardStats } from '@/services/dashboardService';
@@ -9,8 +9,8 @@ import { useUsers } from '@/services/userService';
 import { useCategories } from '@/services/categoryService';
 import { useToast } from '@/hooks/use-toast';
 import { getUserName, getCategoryName } from '@/lib/helpers';
-
-// Import new components
+import { CategoryApprovalTable } from '@/components/CategoryApprovalTable';
+import { useApproveCategory, useRejectCategory } from '@/services/categoryService';
 import { EnhancedStatsCard } from '@/components/admin/EnhancedStatsCard';
 import { ChartsSection } from '@/components/admin/ChartsSection';
 import { PendingApprovalsTable } from '@/components/admin/PendingApprovalsTable';
@@ -19,19 +19,25 @@ import { QuickActionsCard } from '@/components/admin/QuickActionsCard';
 
 export default function AdminDashboard() {
   const { toast } = useToast();
-  
+
   // API calls
   const { data: stats, isLoading: statsLoading } = useDashboardStats('admin');
   const { data: pendingData, isLoading: pendingLoading } = useBusinesses({ approvalStatus: 'pending', limit: 50 });
   const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
-  
+
   const approveMutation = useApproveBusiness();
   const rejectMutation = useRejectBusiness();
 
   const users = userData?.data?.items || [];
   const categories = categoryData?.data?.items || [];
   const pendingBusinesses = pendingData?.items || [];
+  const { data: pendingCategoriesData, isLoading: pendingCategoriesLoading } = useCategories({
+    approvalStatus: 'pending',
+    limit: 50
+  });
+
+const pendingCategories = pendingCategoriesData?.data?.items || [];
 
   // Mock data for demonstration
   const mockSparklineData = [30, 45, 35, 50, 40, 60, 55, 70, 65, 75, 80, 90];
@@ -234,7 +240,13 @@ export default function AdminDashboard() {
             />
           </div>
         </div>
-
+        <CategoryApprovalTable
+          categories={categories}
+          users={users}
+          isLoading={pendingCategoriesLoading}
+          title="Pending Category Approvals"
+          description="Categories created by users waiting for your approval"
+        />
         {/* Enhanced Pending Approvals Table */}
         <PendingApprovalsTable
           businesses={pendingBusinesses}

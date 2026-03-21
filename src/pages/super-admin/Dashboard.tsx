@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-  Building2, Users, CreditCard, TrendingUp, ClipboardCheck, Crown, 
-  MessageSquare, CalendarCheck, Activity, DollarSign, Target, Phone, 
+  Building2, Users, CreditCard, TrendingUp, ClipboardCheck, Crown,
+  MessageSquare, CalendarCheck, Activity, DollarSign, Target, Phone,
   BookOpen
 } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
@@ -16,8 +16,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getUserName, getCategoryName } from '@/lib/helpers';
-
-// Import admin components
+import { CategoryApprovalTable } from '@/components/CategoryApprovalTable';
+import { useApproveCategory, useRejectCategory } from '@/services/categoryService';
 import { ChartsSection } from '@/components/admin/ChartsSection';
 import { PendingApprovalsTable } from '@/components/admin/PendingApprovalsTable';
 import { RecentActivityFeed } from '@/components/admin/RecentActivityFeed';
@@ -25,14 +25,14 @@ import { QuickActionsCard } from '@/components/admin/QuickActionsCard';
 
 export default function SuperAdminDashboard() {
   const { toast } = useToast();
-  
+
   // API calls - using actual backend services
   const { data: stats, isLoading: statsLoading } = useDashboardStats('super_admin');
   const { data: businessesData, isLoading: businessesLoading } = useBusinesses({ limit: 10 });
   const { data: pendingData, isLoading: pendingLoading } = useBusinesses({ approvalStatus: 'pending', limit: 50 });
   const { data: userData } = useUsers({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
-  
+
   const approveMutation = useApproveBusiness();
   const rejectMutation = useRejectBusiness();
 
@@ -40,6 +40,17 @@ export default function SuperAdminDashboard() {
   const categories = categoryData?.data?.items || [];
   const businesses = businessesData?.data?.items || [];
   const pendingBusinesses = pendingData?.items || [];
+  const { data: pendingCategoriesData, isLoading: pendingCategoriesLoading, error: pendingCategoriesError } = useCategories({
+    approvalStatus: 'pending',
+    limit: 50
+  });
+
+  const pendingCategories = pendingCategoriesData?.data?.items || [];
+
+  // Add debugging
+  console.log('Pending Categories Data:', pendingCategoriesData);
+  console.log('Pending Categories Error:', pendingCategoriesError);
+  console.log('Pending Categories Count:', pendingCategories.length);
 
   // Calculate category distribution from actual data
   const getCategoryDistribution = () => {
@@ -56,7 +67,7 @@ export default function SuperAdminDashboard() {
   // Generate recent activities from actual business data
   const getRecentActivities = () => {
     const activities = [];
-    
+
     // Add recent business submissions
     const recentBusinesses = businesses
       .filter(b => b.createdAt)
@@ -66,17 +77,17 @@ export default function SuperAdminDashboard() {
     recentBusinesses.forEach((business, index) => {
       const userName = getUserName(users, business.createdBy as string);
       const categoryName = getCategoryName(categories, business.categoryId);
-      
+
       activities.push({
         id: `business-${business._id}`,
         type: business.approvalStatus === 'pending' ? 'business_submitted' :
-               business.approvalStatus === 'approved' ? 'business_approved' : 'business_rejected',
+          business.approvalStatus === 'approved' ? 'business_approved' : 'business_rejected',
         title: business.approvalStatus === 'pending' ? 'New Business Registration' :
-               business.approvalStatus === 'approved' ? 'Business Approved' : 'Business Rejected',
+          business.approvalStatus === 'approved' ? 'Business Approved' : 'Business Rejected',
         description: `${business.businessName} • ${categoryName}`,
         timestamp: new Date(business.createdAt),
         status: business.approvalStatus === 'approved' ? 'success' :
-                business.approvalStatus === 'rejected' ? 'error' : 'info'
+          business.approvalStatus === 'rejected' ? 'error' : 'info'
       });
     });
 
@@ -258,7 +269,19 @@ export default function SuperAdminDashboard() {
             />
           </div>
         </div>
-
+        {/* Category Approvals Section */}
+        {pendingCategoriesError && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">Error loading pending categories: {pendingCategoriesError.message}</p>
+          </div>
+        )}
+        <CategoryApprovalTable
+          categories={pendingCategories}
+          users={users}
+          isLoading={pendingCategoriesLoading}
+          title="Pending Category Approvals"
+          description="Categories created by users waiting for your approval"
+        />
         {/* Enhanced Pending Approvals Table */}
         <PendingApprovalsTable
           businesses={pendingBusinesses}

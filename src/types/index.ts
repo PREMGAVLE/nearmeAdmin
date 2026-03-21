@@ -1,3 +1,5 @@
+import { JSX } from "react/jsx-runtime";
+
 // ===== Roles =====
 export type UserRole = 'super_admin' | 'admin' | 'salesman' | 'owner' | 'user';
 
@@ -56,7 +58,7 @@ export interface User {
   isDeleted?: boolean;
   deletedAt?: string;
   deletedBy?: string | User;
-  
+
   // ✅ NEW: Related data for detailed view
   recentBusinesses?: any[];
   recentLeads?: any[];
@@ -126,13 +128,29 @@ export interface Business {
 export interface Category {
   _id: string;
   name: string;
-  section?: string;
-  isActive?: boolean;
+  section?: 'BUSINESS' | 'SERVICE';
+  isTrending?: boolean;
   iconKey?: string;
+  image?: {
+    key?: string;
+    url?: string;
+  };
+  isActive?: boolean;
   businessCount?: number;
-  createdAt?: string;
-}
 
+  // Approval fields from backend
+  createdBy: string | User;
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string | User;
+  approvedAt?: string;
+
+  createdAt?: string;
+  updatedAt?: string;
+}
+export interface CategoryFilters extends PaginationParams {
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  createdBy?: string;
+}
 // ===== Lead =====
 export interface Lead {
   _id: string;
@@ -202,6 +220,8 @@ export interface PaginatedResponse<T> {
   items: any;
   success: boolean;
   data: {
+    map(arg0: (b: any) => JSX.Element): import("react").ReactNode;
+    length: number;
     items: T[];
     pagination: {
       page: number;
@@ -219,6 +239,8 @@ export interface PaginationParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  approvalStatus?: string; // Add this line
+
 }
 
 export interface BusinessFilters extends PaginationParams {

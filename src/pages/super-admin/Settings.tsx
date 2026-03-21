@@ -25,6 +25,9 @@ export default function SettingsPage() {
   const [defaultCurrency, setDefaultCurrency] = useState('INR');
   const [defaultListingType, setDefaultListingType] = useState('normal');
   const [saving, setSaving] = useState(false);
+  const [premiumEnabled, setPremiumEnabled] = useState(true);
+  const [premiumPrice, setPremiumPrice] = useState(1200);
+  const [premiumDuration, setPremiumDuration] = useState(365)
 
   // Fetch app settings from backend
   const { data: appSettings, isLoading: settingsLoading } = useQuery({
@@ -32,6 +35,29 @@ export default function SettingsPage() {
     queryFn: appSettingsService.getSettings,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
+
+  // NEW: Toggle premium enabled mutation
+  const togglePremiumEnabledMutation = useMutation({
+    mutationFn: () => appSettingsService.togglePremiumOverride(false), // This will call toggle-premium endpoint
+    onSuccess: (data) => {
+      queryClient.setQueryData(['appSettings'], data);
+      setPremiumEnabled(data.premiumEnabled);
+      toast({
+        title: 'Premium Feature Updated',
+        description: data.premiumEnabled
+          ? 'Premium requests are now ENABLED - Users can request premium'
+          : 'Premium requests are now DISABLED - Users cannot request premium'
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to update premium feature',
+        variant: 'destructive'
+      });
+    }
+  });
+
 
   // Toggle premium override mutation
   const togglePremiumMutation = useMutation({
@@ -124,27 +150,69 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-6">
-              {/* Premium Override Toggle */}
+              {/* NEW: Premium Feature Toggle */}
+              <div className="flex items-center justify-between rounded-lg border p-4 bg-blue-50">
+                <div className="space-y-1">
+                  <p className="font-medium text-foreground">🔥 Premium Feature Toggle</p>
+                  <p className="text-sm text-muted-foreground">
+                    Enable/disable premium business requests from users
+                  </p>
+                  {premiumEnabled && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Users Can Request Premium
+                    </span>
+                  )}
+                </div>
+                <Switch
+                  checked={premiumEnabled}
+                  onCheckedChange={(checked) => togglePremiumEnabledMutation.mutate()}
+                  disabled={togglePremiumEnabledMutation.isPending}
+                />
+              </div>
+
+              {/* Existing Premium Override */}
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-1">
                   <p className="font-medium text-foreground">Global Premium Mode</p>
                   <p className="text-sm text-muted-foreground">
                     Enable to give all users premium access regardless of their subscription status
                   </p>
-                  {currentSettings.premiumOverride && (  // "globalPremiumOverride" को "premiumOverride" में बदलें
-  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-    Currently Active
-  </span>
-)}
+                  {currentSettings.premiumOverride && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Currently Active
+                    </span>
+                  )}
                 </div>
                 <Switch
-                  checked={currentSettings.premiumOverride}  // "globalPremiumOverride" को "premiumOverride" में बदलें
+                  checked={currentSettings.premiumOverride}
                   onCheckedChange={(checked) => togglePremiumMutation.mutate(checked)}
                   disabled={togglePremiumMutation.isPending}
                 />
               </div>
 
-              {/* Category Leads Visibility Toggle */}
+              {/* Premium Settings */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Premium Price (₹)</Label>
+                  <Input
+                    type="number"
+                    value={premiumPrice}
+                    onChange={e => setPremiumPrice(Number(e.target.value))}
+                    disabled={!premiumEnabled}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Premium Duration (Days)</Label>
+                  <Input
+                    type="number"
+                    value={premiumDuration}
+                    onChange={e => setPremiumDuration(Number(e.target.value))}
+                    disabled={!premiumEnabled}
+                  />
+                </div>
+              </div>
+
+              {/* Existing Category Leads Toggle */}
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-1">
                   <p className="font-medium text-foreground">Hide Category Leads</p>
@@ -162,25 +230,6 @@ export default function SettingsPage() {
                   onCheckedChange={(checked) => toggleCategoryLeadsMutation.mutate(checked)}
                   disabled={toggleCategoryLeadsMutation.isPending}
                 />
-              </div>
-
-              {/* Current Status Display */}
-              <div className="bg-muted/50 rounded-lg p-4">
-                <h4 className="font-medium text-foreground mb-3">Current System Status</h4>
-                <div className="grid gap-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Premium Mode:</span>
-                    <span className={`font-medium ${currentSettings.premiumOverride ? 'text-green-600' : 'text-gray-600'}`}>
-                      {currentSettings.premiumOverride ? 'ENABLED' : 'DISABLED'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Category Leads:</span>
-                    <span className={`font-medium ${currentSettings.hideCategoryLeads ? 'text-orange-600' : 'text-green-600'}`}>
-                      {currentSettings.hideCategoryLeads ? 'HIDDEN (Premium Only)' : 'VISIBLE (All Users)'}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
