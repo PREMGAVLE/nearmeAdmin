@@ -95,6 +95,7 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
       label: 'My Work',
       items: [
         { title: 'Dashboard', url: '/salesman/dashboard', icon: LayoutDashboard },
+        { title: 'My Users', url: '/salesman/my-users', icon: Users },
         { title: 'Add Business', url: '/salesman/add-business', icon: FolderPlus },
         { title: 'My Businesses', url: '/salesman/businesses', icon: Briefcase },
         { title: 'My Performance', url: '/salesman/performance', icon: TrendingUp },

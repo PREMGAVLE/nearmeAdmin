@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const API_BASE_URL = 'http://localhost:5001/api/smart/';
-const API_BASE_URL = 'https://smartburhanpurcitybackend-production.up.railway.app/api/smart/';
+const API_BASE_URL = 'http://localhost:5001/api/smart/';
+// const API_BASE_URL = 'https://smartburhanpurcitybackend-production.up.railway.app/api/smart/';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

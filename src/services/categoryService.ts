@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const categoryService = {
   getAll: async (params?: CategoryFilters): Promise<PaginatedResponse<Category>> => {
-    const response = await apiClient.get('/categories', { params });
+    const response = await apiClient.get('/categories/public', { params });
     return response.data;
   },
 

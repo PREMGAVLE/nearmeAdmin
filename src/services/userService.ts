@@ -1,5 +1,5 @@
 import apiClient from '@/lib/apiClient';
-import type { User, PaginatedResponse, UserFilters, Subscription } from '@/types';
+import type { User, PaginatedResponse, UserFilters, Subscription, CreateUser } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const userService = {
@@ -98,6 +98,11 @@ getUserLeads: async (userId: string): Promise<any[]> => {
     const response = await apiClient.patch(`/users/${id}/activate-subscription`, { subscription });
     return response.data.data;
   },
+//Sales man part
+  getSalesmanUsers: async (params?: any): Promise<PaginatedResponse<User>> => {
+    const response = await apiClient.get('/users/salesman/my-users', { params });
+    return response.data;
+  },
 };
 
 // ===== React Query Hooks =====
@@ -112,7 +117,7 @@ export function useUser(id: string) {
 export function useCreateUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: Partial<User>) => userService.create(payload),
+    mutationFn: (payload: CreateUser) => userService.create(payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
   });
 }
@@ -192,4 +197,7 @@ export function useActivateSubscription() {
       userService.activateSubscription(id, subscription),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
   });
+}
+export function useUsersBySalesman(params?: any) {
+  return useQuery({ queryKey: ['salesman-users', params], queryFn: () => userService.getSalesmanUsers(params) });
 }

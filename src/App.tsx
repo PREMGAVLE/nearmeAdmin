@@ -28,6 +28,7 @@ import SalesmanDashboard from "@/pages/salesman/Dashboard";
 import AddBusiness from "@/pages/salesman/AddBusiness";
 import MyBusinesses from "@/pages/salesman/MyBusinesses";
 import SalesmanPerformance from "@/pages/salesman/Performance";
+import MyUsers from "@/pages/salesman/MyUsers";
 
 // Shared pages
 import CategoriesPage from "@/pages/shared/Categories";
@@ -91,6 +92,7 @@ const App = () => (
               <Route path="/salesman/add-business" element={<AddBusiness />} />
               <Route path="/salesman/businesses" element={<MyBusinesses />} />
               <Route path="/salesman/performance" element={<SalesmanPerformance />} />
+              <Route path="/salesman/my-users" element={<MyUsers />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

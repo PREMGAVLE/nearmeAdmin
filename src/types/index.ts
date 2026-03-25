@@ -13,7 +13,19 @@ export interface Subscription {
   startDate?: string;
   expiryDate?: string;
 }
-
+export interface CreateUser {
+  name: string;
+  mobile: string;
+  email?: string;
+  password: string;
+  role: UserRole;
+  address?: string;
+  city?: string;
+  categoryPreference?: string;
+  subscription?: Subscription;
+  acceptTerms?: boolean;
+  notes?: string;
+}
 export interface UserActivity {
   lastLogin?: string;
   lastActivity?: string;
@@ -81,7 +93,7 @@ export interface BusinessAddress {
 // ===== Payment Details (nested in Business) =====
 export interface PaymentDetails {
   amount: number;
-  paymentMode: 'cash' | 'upi';
+  paymentMode: 'cash' | 'upi'| 'online';
   paymentStatus: 'pending' | 'verified';
   paymentNote?: string;
   paymentDate?: string;

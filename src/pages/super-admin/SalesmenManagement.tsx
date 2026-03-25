@@ -18,7 +18,7 @@ export default function SalesmenManagement() {
   const [createOpen, setCreateOpen] = useState(false);
   const [subOpen, setSubOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [formData, setFormData] = useState({ name: '', mobile: '', email: '' });
+  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '', address: '', notes: '' });
   const [subData, setSubData] = useState<Partial<Subscription>>({ planType: '', startDate: '', expiryDate: '', status: 'active' });
   const { toast } = useToast();
 
@@ -33,7 +33,7 @@ export default function SalesmenManagement() {
       onSuccess: () => {
         toast({ title: 'Salesman Created' });
         setCreateOpen(false);
-        setFormData({ name: '', mobile: '', email: '' });
+        setFormData({ name: '', mobile: '', email: '', password: '', address: '', notes: '' });
       },
       onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed', variant: 'destructive' }),
     });
@@ -67,8 +67,48 @@ export default function SalesmenManagement() {
             <DialogHeader><DialogTitle>Add New Salesman</DialogTitle></DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-2"><Label>Name</Label><Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} required /></div>
-              <div className="space-y-2"><Label>Mobile</Label><Input value={formData.mobile} onChange={e => setFormData(p => ({ ...p, mobile: e.target.value }))} required /></div>
-              <div className="space-y-2"><Label>Email</Label><Input type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} required /></div>
+              <div className="space-y-2">
+                <Label>Mobile</Label>
+                <Input
+                  value={formData.mobile}
+                  onChange={e => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setFormData(p => ({ ...p, mobile: value }));
+                  }}
+                  required
+                  pattern="\d{10}"
+                  maxLength={10}
+                  placeholder="10-digit mobile number"
+                />
+              </div>              <div className="space-y-2"><Label>Email</Label><Input type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} required /></div>
+              <div className="space-y-2">
+                <Label>Password</Label>
+                <Input
+                  type="password"
+                  value={formData.password}
+                  onChange={e => setFormData(p => ({ ...p, password: e.target.value }))}
+                  required
+                  minLength={8}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Address</Label>
+                <Input
+                  value={formData.address}
+                  onChange={e => setFormData(p => ({ ...p, address: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <textarea
+                  className="w-full p-2 border rounded-md"
+                  value={formData.notes}
+                  onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
+                  rows={3}
+                />
+              </div>
               <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={createMutation.isPending}>
                 {createMutation.isPending ? 'Creating...' : 'Create Salesman'}
               </Button>
@@ -110,7 +150,7 @@ export default function SalesmenManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableSkeleton cols={7} /> : data?.data?.map((s) => (
+              {isLoading ? <TableSkeleton cols={7} /> : data.data?.items?.map((s) => (
                 <TableRow key={s._id}>
                   <TableCell className="font-medium">{s.name}</TableCell>
                   <TableCell className="text-muted-foreground">{s.email}</TableCell>
@@ -131,7 +171,7 @@ export default function SalesmenManagement() {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (!data?.data || data.data.length === 0) && (
+              {!isLoading && (!data?.items || data.data.items.length === 0) && (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No salesmen found</TableCell></TableRow>
               )}
             </TableBody>
