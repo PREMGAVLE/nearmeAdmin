@@ -12,6 +12,7 @@ import { Building2, UserPlus, Eye, Plus } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from '@/hooks/use-toast';
 import { TableSkeleton } from '@/components/TableSkeleton';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function MyUsers() {
     const { data, isLoading, refetch } = useUsersBySalesman();
@@ -19,6 +20,7 @@ export default function MyUsers() {
     const createBusinessMutation = useCreateBusiness();
     const [selectedUserId, setSelectedUserId] = useState('');
     const [isBusinessModalOpen, setIsBusinessModalOpen] = useState(false);
+    const navigate = useNavigate();
     const [businessForm, setBusinessForm] = useState({
         businessName: '',
         categoryId: '',
@@ -36,15 +38,15 @@ export default function MyUsers() {
             area: '',
             city: 'Burhanpur',
             state: 'Madhya Pradesh',
-            pincode: '450331'
+            pincode: ''
         },
         description: '',
-        keywords: [],
-        website: '',
-        socialLinks: { facebook: '', instagram: '', twitter: '', youtube: '' },
-        businessHours: { monday: '', tuesday: '', wednesday: '', thursday: '', friday: '', saturday: '', sunday: '' },
+        openingTime: '',
+        closingTime: '',
+        serviceDays: [],
+        charges: 0,
         listingType: 'normal' as const,
-        approvalStatus: 'pending' as const
+        paymentDetails: undefined
     });
 
     const handleCreateBusiness = () => {
@@ -53,8 +55,7 @@ export default function MyUsers() {
         const payload = {
             ...businessForm,
             ownerId: selectedUserId,
-            createdBy: selectedUserId,
-            keywords: businessForm.keywords.filter(k => k.trim())
+            createdBy: selectedUserId
         };
 
         createBusinessMutation.mutate(payload, {
@@ -71,14 +72,14 @@ export default function MyUsers() {
                     contactNumbers: { primary: '', whatsapp: '', alternate: '' },
                     contactPersonName: '',
                     email: '',
-                    address: { street: '', landmark: '', area: '', city: 'Burhanpur', state: 'Madhya Pradesh', pincode: '450331' },
+                    address: { street: '', landmark: '', area: '', city: 'Burhanpur', state: 'Madhya Pradesh', pincode: '' },
                     description: '',
-                    keywords: [],
-                    website: '',
-                    socialLinks: { facebook: '', instagram: '', twitter: '', youtube: '' },
-                    businessHours: { monday: '', tuesday: '', wednesday: '', thursday: '', friday: '', saturday: '', sunday: '' },
+                    openingTime: '',
+                    closingTime: '',
+                    serviceDays: [],
+                    charges: 0,
                     listingType: 'normal',
-                    approvalStatus: 'pending'
+                    paymentDetails: undefined
                 });
                 refetch();
             },
@@ -92,7 +93,7 @@ export default function MyUsers() {
         });
     };
 
-    const categories = categoriesData?.data?.items || categoriesData?.data || [];
+    const categories = categoriesData?.items || [];
 
     return (
         <div className="space-y-6">
@@ -138,7 +139,7 @@ export default function MyUsers() {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => setSelectedUserId(user._id)}
+                                                    onClick={() => navigate(`/salesman/add-business?userId=${user._id}`)}
                                                 >
                                                     <Building2 className="h-4 w-4 mr-1" />
                                                     Add Business
@@ -166,10 +167,7 @@ export default function MyUsers() {
                                                                 <SelectValue placeholder="Select category" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {Array.isArray(categories)
-                                                                    ? categories.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)
-                                                                    : (categories || []).map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)
-                                                                }
+                                                                {categories.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)}
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
@@ -222,12 +220,125 @@ export default function MyUsers() {
                                                             placeholder="Business email"
                                                         />
                                                     </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="pincode">Pincode *</Label>
+                                                        <Input
+                                                            id="pincode"
+                                                            value={businessForm.address.pincode}
+                                                            onChange={(e) => setBusinessForm(p => ({
+                                                                ...p,
+                                                                address: { ...p.address, pincode: e.target.value }
+                                                            }))}
+                                                            placeholder="6-digit pincode"
+                                                            maxLength={6}
+                                                            pattern="\d{6}"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="listingType">Listing Type *</Label>
+                                                        <Select value={businessForm.listingType} onValueChange={(v: 'normal' | 'premium') => setBusinessForm(p => ({ ...p, listingType: v }))}>
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="normal">Normal</SelectItem>
+                                                                <SelectItem value="premium">Premium</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <Label htmlFor="description">Description</Label>
+                                                        <Input
+                                                            id="description"
+                                                            value={businessForm.description}
+                                                            onChange={(e) => setBusinessForm(p => ({ ...p, description: e.target.value }))}
+                                                            placeholder="Business description"
+                                                            maxLength={2000}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <Label htmlFor="street">Address</Label>
+                                                        <Input
+                                                            id="street"
+                                                            value={businessForm.address.street}
+                                                            onChange={(e) => setBusinessForm(p => ({
+                                                                ...p,
+                                                                address: { ...p.address, street: e.target.value }
+                                                            }))}
+                                                            placeholder="Street address"
+                                                            maxLength={120}
+                                                        />
+                                                    </div>
                                                 </div>
+
+                                                {/* Payment Details - Only for Premium */}
+                                                {businessForm.listingType === 'premium' && (
+                                                    <div className="space-y-4 border-t pt-4 mt-4">
+                                                        <h4 className="font-medium">Payment Details</h4>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <Label>Amount *</Label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={businessForm.paymentDetails?.amount || ''}
+                                                                    onChange={(e) => setBusinessForm(p => ({
+                                                                        ...p,
+                                                                        paymentDetails: {
+                                                                            ...p.paymentDetails,
+                                                                            amount: Number(e.target.value)
+                                                                        }
+                                                                    }))}
+                                                                    placeholder="Enter amount"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label>Payment Mode *</Label>
+                                                                <Select value={businessForm.paymentDetails?.paymentMode || ''} onValueChange={(v) => setBusinessForm(p => ({
+                                                                    ...p,
+                                                                    paymentDetails: {
+                                                                        ...p.paymentDetails,
+                                                                        paymentMode: v
+                                                                    }
+                                                                }))}>
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder="Select payment mode" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="cash">Cash</SelectItem>
+                                                                        <SelectItem value="upi">UPI</SelectItem>
+                                                                        <SelectItem value="online">Online</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+                                                            <div className="space-y-2 md:col-span-2">
+                                                                <Label>Payment Note</Label>
+                                                                <Input
+                                                                    value={businessForm.paymentDetails?.paymentNote || ''}
+                                                                    onChange={(e) => setBusinessForm(p => ({
+                                                                        ...p,
+                                                                        paymentDetails: {
+                                                                            ...p.paymentDetails,
+                                                                            paymentNote: e.target.value
+                                                                        }
+                                                                    }))}
+                                                                    placeholder="Optional payment note"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 <div className="flex justify-end gap-2 mt-6">
                                                     <Button variant="outline" onClick={() => setIsBusinessModalOpen(false)}>Cancel</Button>
                                                     <Button
                                                         onClick={handleCreateBusiness}
-                                                        disabled={createBusinessMutation.isPending || !businessForm.businessName || !businessForm.categoryId || !businessForm.contactNumbers.primary}
+                                                        disabled={createBusinessMutation.isPending ||
+                                                            !businessForm.businessName ||
+                                                            !businessForm.categoryId ||
+                                                            !businessForm.contactNumbers.primary ||
+                                                            !businessForm.address.pincode ||
+                                                            (businessForm.listingType === 'premium' && (!businessForm.paymentDetails?.amount || !businessForm.paymentDetails?.paymentMode))
+                                                        }
                                                     >
                                                         {createBusinessMutation.isPending ? 'Creating...' : 'Create Business'}
                                                     </Button>

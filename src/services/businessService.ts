@@ -77,6 +77,11 @@ export const businessService = {
     const response = await apiClient.patch(`/business/${id}/reject-premium-request`);
     return response.data;
   },
+  getSalesmanBusinesses: async (params?: any): Promise<PaginatedResponse<Business>> => {
+  const response = await apiClient.get('/business/salesman/my-businesses', { params });
+  return response.data;
+},
+
 };
 
 // ===== React Query Hooks =====
@@ -182,5 +187,11 @@ export function useRejectPremiumRequest() {
   return useMutation({
     mutationFn: (id: string) => businessService.rejectPremiumRequest(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
+  });
+}
+export function useSalesmanBusinesses(params?: any) {
+  return useQuery({ 
+    queryKey: ['salesman-businesses', params], 
+    queryFn: () => businessService.getSalesmanBusinesses(params) 
   });
 }

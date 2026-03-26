@@ -93,7 +93,7 @@ export interface BusinessAddress {
 // ===== Payment Details (nested in Business) =====
 export interface PaymentDetails {
   amount: number;
-  paymentMode: 'cash' | 'upi'| 'online';
+  paymentMode: 'cash' | 'upi' | 'online';
   paymentStatus: 'pending' | 'verified';
   paymentNote?: string;
   paymentDate?: string;
@@ -229,19 +229,15 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse<T> {
-  items: any;
-  success: boolean;
-  data: {
-    map(arg0: (b: any) => JSX.Element): import("react").ReactNode;
-    length: number;
-    items: T[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
+  data: any[];
+  items: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
+  success: boolean;
 }
 
 // ===== Query Params =====

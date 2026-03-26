@@ -32,8 +32,8 @@ export default function SalesmanDashboard() {
   console.log('All Categories Data:', categoryData);
   console.log('User ID:', user?._id);
 
-  const categories = categoryData?.data?.items || [];
-  const myCategories = myCategoriesData?.data?.items || [];
+  const categories = categoryData?.items || [];
+  const myCategories = myCategoriesData?.items || [];
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -70,7 +70,7 @@ export default function SalesmanDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.data?.map((b) => (
+              {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.items?.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
@@ -79,7 +79,7 @@ export default function SalesmanDashboard() {
                   <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
-              {!businessesLoading && (!businessesData?.data || businessesData.data.length === 0) && (
+              {!businessesLoading && (!businessesData?.items || businessesData.items.length === 0) && (
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No businesses yet</TableCell></TableRow>
               )}
             </TableBody>
@@ -138,7 +138,7 @@ export default function SalesmanDashboard() {
                         </div>
                       </TableCell>
                     </TableRow>
-                    
+
                     {myCategories.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
@@ -153,7 +153,7 @@ export default function SalesmanDashboard() {
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${category.section === 'BUSINESS'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-green-100 text-green-800'
-                            }`}>
+                              }`}>
                               {category.section}
                             </span>
                           </TableCell>

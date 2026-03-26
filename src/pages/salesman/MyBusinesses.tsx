@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useBusinesses, useRequestPremium } from '@/services/businessService';
+import { useBusinesses, useRequestPremium, useSalesmanBusinesses } from '@/services/businessService';
 import { useUsers, useActivateSubscription } from '@/services/userService';
 import { useCategories } from '@/services/categoryService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,15 +34,16 @@ export default function MyBusinesses() {
   const requestPremiumMutation = useRequestPremium();
   const activateSubMutation = useActivateSubscription();
 
-  const users = userData?.data || [];
-  const categories = categoryData?.data || [];
+ const users = userData?.items || [];
+const categories = categoryData?.items || [];
 
-  const { data, isLoading } = useBusinesses({
-    ...filters, createdBy: user?._id, search: search || undefined,
-  });
+const { data, isLoading } = useSalesmanBusinesses({
+  ...filters, 
+  search: search || undefined,
+});
 
-  // Get unique owner IDs from businesses
-  const ownerIds = [...new Set((data?.data || []).map(b => b.ownerId).filter(Boolean))] as string[];
+
+  const ownerIds = [...new Set((data?.items || []).map(b => b.ownerId).filter(Boolean))] as string[];
   const owners = ownerIds.map(id => getUserById(users, id)).filter(Boolean) as User[];
 
   const handleRequestPremium = (id: string) => {
@@ -153,7 +154,7 @@ export default function MyBusinesses() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading ? <TableSkeleton cols={9} /> : data?.data?.map((b) => {
+                  {isLoading ? <TableSkeleton cols={9} /> : data?.items?.map((b) => {
                     const owner = b.ownerId ? getUserById(users, b.ownerId) : null;
                     const ownerSubActive = owner?.subscription?.status === 'active';
                     return (
@@ -187,7 +188,7 @@ export default function MyBusinesses() {
                       </TableRow>
                     );
                   })}
-                  {!isLoading && (!data?.data || data.data.length === 0) && (
+                  {!isLoading && (!data?.items || data.items.length === 0) && (
                     <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
                   )}
                 </TableBody>

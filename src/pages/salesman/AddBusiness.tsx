@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,13 +11,24 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, UserPlus, CheckCircle } from 'lucide-react';
 import type { BusinessType } from '@/types';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 export default function AddBusiness() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [ownerId, setOwnerId] = useState('');
-
+const [searchParams] = useSearchParams();
+const navigate = useNavigate();
+const userIdFromUrl = searchParams.get('userId');
+ useEffect(() => {
+  if (userIdFromUrl) {
+    setOwnerId(userIdFromUrl);
+    // User details fetch karke ownerData auto-fill karo
+    // User fetch API call karna hoga
+    setStep(2); // Direct business form pe le jao
+  }
+}, [userIdFromUrl]);
   // Step 1: Owner form (complete backend fields)
   const [ownerData, setOwnerData] = useState({
     name: '',
@@ -377,10 +388,9 @@ export default function AddBusiness() {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.isArray(categoriesData?.data)
-                    ? categoriesData.data.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)
-                    : (categoriesData?.data?.items || []).map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)
-                  }                </SelectContent>
+                  {categoriesData?.items?.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)}
+
+                </SelectContent>
               </Select>
             </div>
 
