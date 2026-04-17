@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getUserName } from '@/lib/helpers';
 import { useApproveCategory, useRejectCategory } from '@/services/categoryService';
 import { Category, User as UserType } from '@/types';
+import * as Icons from 'lucide-react';
+import React from 'react';
 
 interface CategoryApprovalTableProps {
     categories: Category[];
@@ -115,7 +117,18 @@ export function CategoryApprovalTable({
                             ) : (
                                 pendingCategories.map((category) => (
                                     <TableRow key={category._id}>
-                                        <TableCell className="font-medium">{category.name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-2">
+                                                {category.iconKey && (
+                                                    <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
+                                                        {React.createElement(Icons[category.iconKey as keyof typeof Icons], {
+                                                            className: "h-4 w-4"
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {category.name}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${category.section === 'BUSINESS'
                                                 ? 'bg-blue-100 text-blue-800'

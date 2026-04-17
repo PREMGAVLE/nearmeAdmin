@@ -277,3 +277,48 @@ export interface BookingFilters extends PaginationParams {
   bookingStatus?: string;
   paymentStatus?: string;
 }
+
+
+// ===== Ad Types =====
+export type AdType = 'banner' | 'sidebar' | 'popup' | 'featured' | 'category';
+export type AdStatus = 'active' | 'inactive' | 'expired' | 'scheduled';
+
+export interface Ad {
+  _id: string;
+  title: string;
+  description?: string;
+  type: AdType;
+  status: AdStatus;
+  imageUrl?: string;
+  redirectUrl?: string;
+  targetCategory?: string;
+  startDate: string;
+  endDate: string;
+  priority: number;
+  clicks: number;
+  impressions: number;
+  isActive: boolean;
+  createdBy: string | User;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AdFormData {
+  title: string;
+  description?: string;
+  type: AdType;
+  startDate: string;
+  endDate: string;
+  redirectUrl?: string;
+  targetCategory?: string;
+  priority: number;
+  imageUrl?: string;
+   isActive?: boolean;
+}
+
+export interface AdFilters extends PaginationParams {
+  type?: AdType;
+  status?: AdStatus;
+  targetCategory?: string;
+  isActive?: boolean;
+}

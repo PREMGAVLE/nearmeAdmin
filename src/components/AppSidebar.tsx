@@ -1,7 +1,8 @@
 import {
   LayoutDashboard, Building2, Users, UserCog, CreditCard, BarChart3,
   Tags, Settings, ClipboardCheck, FolderPlus, Briefcase, TrendingUp, Building,
-  MessageSquare, CalendarCheck, UsersRound, Crown
+  MessageSquare, CalendarCheck, UsersRound, Crown,
+  ImageIcon
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +41,7 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
         { title: 'Admin Management', url: '/super-admin/admins', icon: UserCog },
         { title: 'Salesman Management', url: '/super-admin/salesmen', icon: Users },
         { title: 'Categories', url: '/super-admin/categories', icon: Tags },
+        { title: 'Ads Management', url: '/super-admin/ads', icon: ImageIcon },
       ],
     },
     {

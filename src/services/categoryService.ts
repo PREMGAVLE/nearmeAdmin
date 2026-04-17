@@ -8,13 +8,23 @@ export const categoryService = {
     return response.data;
   },
 
-  create: async (payload: { name: string; section?: string }): Promise<Category> => {
+  create: async (payload: { 
+    name: string; 
+    section: 'BUSINESS' | 'SERVICE'; 
+    isTrending?: boolean;
+    iconKey?: string;
+  }): Promise<Category> => {
     const response = await apiClient.post('/categories', payload);
     return response.data;
   },
 
-  update: async (id: string, payload: { name: string; section?: string }): Promise<Category> => {
-    const response = await apiClient.put(`/categories/${id}`, payload);
+  update: async (id: string, payload: { 
+    name: string; 
+    section?: 'BUSINESS' | 'SERVICE'; 
+    isTrending?: boolean;
+    iconKey?: string;
+  }): Promise<Category> => {
+   const response = await apiClient.patch(`/categories/${id}`, payload);
     return response.data;
   },
 
@@ -41,7 +51,12 @@ export function useCategories(params?: CategoryFilters) {
 export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { name: string; section?: string }) => categoryService.create(payload),
+    mutationFn: (payload: { 
+      name: string; 
+      section: 'BUSINESS' | 'SERVICE'; 
+      isTrending?: boolean;
+      iconKey?: string;
+    }) => categoryService.create(payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
   });
 }
@@ -49,7 +64,19 @@ export function useCreateCategory() {
 export function useUpdateCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, name, section }: { id: string; name: string; section?: string }) => categoryService.update(id, { name, section }),
+    mutationFn: ({ 
+      id, 
+      name, 
+      section, 
+      isTrending, 
+      iconKey 
+    }: { 
+      id: string; 
+      name: string; 
+      section?: 'BUSINESS' | 'SERVICE'; 
+      isTrending?: boolean;
+      iconKey?: string;
+    }) => categoryService.update(id, { name, section, isTrending, iconKey }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
   });
 }

@@ -18,6 +18,8 @@ import UserManagement from "@/pages/super-admin/UserManagement";
 import PaymentsSA from "@/pages/super-admin/Payments";
 import PremiumRequests from "@/pages/super-admin/PremiumRequests";
 import SettingsPage from "@/pages/super-admin/Settings";
+import AdsManagement from "@/pages/super-admin/AdsManagement";
+
 
 // Admin pages
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -31,10 +33,11 @@ import SalesmanPerformance from "@/pages/salesman/Performance";
 import MyUsers from "@/pages/salesman/MyUsers";
 
 // Shared pages
-import CategoriesPage from "@/pages/shared/Categories";
+import CategoryManagement from "@/pages/super-admin/CategoryManagement";
 import ReportsPage from "@/pages/shared/Reports";
 import LeadsPage from "@/pages/shared/Leads";
 import BookingsPage from "@/pages/shared/Bookings";
+import CategoriesPage from "./pages/shared/Categories";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,11 +69,12 @@ const App = () => (
               <Route path="/super-admin/salesmen" element={<SalesmenManagement />} />
               <Route path="/super-admin/payments" element={<PaymentsSA />} />
               <Route path="/super-admin/premium-requests" element={<PremiumRequests />} />
-              <Route path="/super-admin/categories" element={<CategoriesPage />} />
+              <Route path="/super-admin/categories" element={<CategoryManagement />} />
               <Route path="/super-admin/reports" element={<ReportsPage />} />
               <Route path="/super-admin/leads" element={<LeadsPage />} />
               <Route path="/super-admin/bookings" element={<BookingsPage />} />
               <Route path="/super-admin/settings" element={<SettingsPage />} />
+              <Route path="/super-admin/ads" element={<AdsManagement />} />
             </Route>
 
             {/* Admin Routes */}
