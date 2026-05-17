@@ -77,9 +77,11 @@ export const businessService = {
     const response = await apiClient.patch(`/business/${id}/reject-premium-request`);
     return response.data;
   },
-  getSalesmanBusinesses: async (params?: any): Promise<PaginatedResponse<Business>> => {
-  const response = await apiClient.get('/business/salesman/my-businesses', { params });
-  return response.data;
+  getSalesmanBusinesses: async (params?: any): Promise<any> => {
+  const response = await apiClient.get(`/business/salesman/my-businesses`, { params });
+  // Backend returns { success: true, data: [items] } not paginated
+  const items = Array.isArray(response.data.data) ? response.data.data : [];
+  return { items, success: true };
 },
 
 };
@@ -190,8 +192,8 @@ export function useRejectPremiumRequest() {
   });
 }
 export function useSalesmanBusinesses(params?: any) {
-  return useQuery({ 
-    queryKey: ['salesman-businesses', params], 
-    queryFn: () => businessService.getSalesmanBusinesses(params) 
-  });
+  return useQuery({
+    queryKey: ['salesman-businesses', params],
+    queryFn: () => businessService.getSalesmanBusinesses(params)
+  }) as any;
 }

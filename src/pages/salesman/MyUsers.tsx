@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useUsersBySalesman } from '@/services/userService';
 import { useCreateBusiness } from '@/services/businessService';
 import { useCategories } from '@/services/categoryService';
+import type { BusinessType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -24,7 +25,7 @@ export default function MyUsers() {
     const [businessForm, setBusinessForm] = useState({
         businessName: '',
         categoryId: '',
-        businessType: 'LEAD' as 'LEAD' | 'BOOKING' | 'HYBRID',
+        businessType: 'leads' as BusinessType,
         contactNumbers: {
             primary: '',
             whatsapp: '',
@@ -45,7 +46,7 @@ export default function MyUsers() {
         closingTime: '',
         serviceDays: [],
         charges: 0,
-        listingType: 'normal' as const,
+        listingType: 'normal' as 'normal' | 'premium',
         paymentDetails: undefined
     });
 
@@ -68,7 +69,7 @@ export default function MyUsers() {
                 setBusinessForm({
                     businessName: '',
                     categoryId: '',
-                    businessType: 'LEAD',
+                    businessType: 'leads',
                     contactNumbers: { primary: '', whatsapp: '', alternate: '' },
                     contactPersonName: '',
                     email: '',
@@ -93,7 +94,7 @@ export default function MyUsers() {
         });
     };
 
-    const categories = categoriesData?.items || [];
+    const categories = categoriesData?.data || [];
 
     return (
         <div className="space-y-6">
@@ -102,7 +103,7 @@ export default function MyUsers() {
                     <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">My Users</h1>
                     <p className="text-sm text-muted-foreground">Users created by you</p>
                 </div>
-                <Button className="gradient-primary text-primary-foreground gap-2">
+                <Button className="gradient-primary text-primary-foreground gap-2" onClick={() => navigate('/salesman/add-business')}>
                     <UserPlus className="h-4 w-4" /> Create New User
                 </Button>
             </div>
@@ -204,9 +205,9 @@ export default function MyUsers() {
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="LEAD">Lead Generation</SelectItem>
-                                                                <SelectItem value="BOOKING">Booking System</SelectItem>
-                                                                <SelectItem value="HYBRID">Hybrid (Lead + Booking)</SelectItem>
+                                                                <SelectItem value="leads">Lead Generation</SelectItem>
+                                                                <SelectItem value="booking">Booking System</SelectItem>
+                                                                <SelectItem value="hybrid">Hybrid (Lead + Booking)</SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                     </div>

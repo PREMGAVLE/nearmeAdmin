@@ -94,7 +94,7 @@ export interface BusinessAddress {
 export interface PaymentDetails {
   amount: number;
   paymentMode: 'cash' | 'upi' | 'online';
-  paymentStatus: 'pending' | 'verified';
+  paymentStatus: 'pending' | 'received' | 'verified';
   paymentNote?: string;
   paymentDate?: string;
 }
@@ -107,6 +107,7 @@ export interface Verification {
 
 // ===== Business =====
 export interface Business {
+  created_at: string | number | Date;
   _id: string;
   businessName: string;
   categoryId: string;
@@ -229,15 +230,14 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse<T> {
-  data: any[];
-  items: T[];
-  pagination: {
+  success: boolean;
+  message?: string;
+  data: {
+    items: T[];
+    total: number;
     page: number;
     limit: number;
-    total: number;
-    totalPages: number;
   };
-  success: boolean;
 }
 
 // ===== Query Params =====

@@ -1,9 +1,9 @@
 import apiClient from '@/lib/apiClient';
-import type { Category, CategoryFilters, PaginatedResponse, PaginationParams } from '@/types';
+import type { Category, CategoryFilters, ApiResponse, PaginationParams } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const categoryService = {
-  getAll: async (params?: CategoryFilters): Promise<PaginatedResponse<Category>> => {
+  getAll: async (params?: CategoryFilters): Promise<ApiResponse<Category[]>> => {
     const response = await apiClient.get('/categories/public', { params });
     return response.data;
   },

@@ -1,7 +1,6 @@
-import { Building2, CheckCircle, Clock, Crown, CreditCard, Folder, User, Calendar } from 'lucide-react';
+import { Building2, CheckCircle, Clock, Crown, CreditCard, Folder, Calendar } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
-import { useDashboardStats } from '@/services/dashboardService';
-import { useBusinesses } from '@/services/businessService';
+import { useBusiness, useBusinesses } from '@/services/businessService';
 import { useCategories } from '@/services/categoryService';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
@@ -12,28 +11,39 @@ import { getCategoryName } from '@/lib/helpers';
 
 export default function SalesmanDashboard() {
   const { user } = useAuth();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats('salesman', user?._id);
   const { data: businessesData, isLoading: businessesLoading } = useBusinesses({
     createdBy: user?._id,
-    limit: 10,
+    limit: 5,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
   });
+
+  // Fetch all user's businesses for stats calculation
+  const { data: allBusinessesData, isLoading: statsLoading } = useBusinesses({
+    createdBy: user?._id,
+  });
+
+  const businesses = allBusinessesData?.data?.items || [];
+  const totalBusinesses = businesses.length;
+  const approved = businesses.filter(b => b.approvalStatus === 'approved').length;
+  const pending = businesses.filter(b => b.approvalStatus === 'pending').length;
+  const pendingPremium = businesses.filter(b => b.premiumRequestStatus === 'premium_requested').length;
+  const totalRevenue = businesses
+    .filter(b => b.paymentDetails?.paymentStatus === 'received' || b.paymentDetails?.paymentStatus === 'verified')
+    .reduce((sum, b) => sum + (b.paymentDetails?.amount || 0), 0);
 
   // Get categories created by this salesman
   const { data: myCategoriesData, isLoading: myCategoriesLoading, error: myCategoriesError } = useCategories({
     createdBy: user?._id,
-    limit: 10
+    limit: 10,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
   });
 
   const { data: categoryData, error: allCategoriesError } = useCategories({ limit: 100 });
 
-  // Add debugging
-  console.log('My Categories Data:', myCategoriesData);
-  console.log('My Categories Error:', myCategoriesError);
-  console.log('All Categories Data:', categoryData);
-  console.log('User ID:', user?._id);
-
-  const categories = categoryData?.items || [];
-  const myCategories = myCategoriesData?.items || [];
+  const categories = categoryData?.data || [];
+  const myCategories = myCategoriesData?.data || [];
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -43,13 +53,13 @@ export default function SalesmanDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {statsLoading ? <StatsSkeleton count={5} /> : stats && (
+        {statsLoading ? <StatsSkeleton count={5} /> : (
           <>
-            <StatsCard title="Total Added" value={stats.totalBusinesses} icon={Building2} variant="default" />
-            <StatsCard title="Approved" value={stats.approvedToday} icon={CheckCircle} variant="success" />
-            <StatsCard title="Pending" value={stats.pendingApprovals} icon={Clock} variant="warning" />
-            <StatsCard title="Premium Sold" value={stats.premiumRequests} icon={Crown} variant="premium" />
-            <StatsCard title="Collected" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={CreditCard} variant="info" />
+            <StatsCard title="Total Added" value={totalBusinesses} icon={Building2} variant="default" />
+            <StatsCard title="Approved" value={approved} icon={CheckCircle} variant="success" />
+            <StatsCard title="Pending" value={pending} icon={Clock} variant="warning" />
+            <StatsCard title="Pending Premium" value={pendingPremium} icon={Crown} variant="premium" />
+            <StatsCard title="Collected" value={`₹${totalRevenue.toLocaleString()}`} icon={CreditCard} variant="info" />
           </>
         )}
       </div>
@@ -70,16 +80,16 @@ export default function SalesmanDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.items?.map((b) => (
+              {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.data?.items?.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
-                  <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
-              {!businessesLoading && (!businessesData?.items || businessesData.items.length === 0) && (
+              {!businessesLoading && (!businessesData?.data?.items || businessesData.data.items.length === 0) && (
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No businesses yet</TableCell></TableRow>
               )}
             </TableBody>
@@ -129,16 +139,6 @@ export default function SalesmanDashboard() {
                   </TableRow>
                 ) : (
                   <>
-                    {/* Debug info */}
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4 bg-gray-50">
-                        <div className="text-xs text-gray-600">
-                          Debug: Found {myCategories.length} categories
-                          {myCategoriesData && ` | Raw data: ${JSON.stringify(myCategoriesData).substring(0, 100)}...`}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-
                     {myCategories.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
