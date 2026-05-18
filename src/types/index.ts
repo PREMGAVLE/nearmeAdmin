@@ -4,7 +4,7 @@ import { JSX } from "react/jsx-runtime";
 export type UserRole = 'super_admin' | 'admin' | 'salesman' | 'owner' | 'user';
 
 // ===== Business Type =====
-export type BusinessType = 'leads' | 'booking' | 'hybrid';
+export type BusinessType = 'LEAD' | 'BOOKING' | 'HYBRID';
 
 // ===== Subscription =====
 export interface Subscription {
@@ -171,7 +171,7 @@ export interface Lead {
   phone: string;
   message: string;
   status: 'new' | 'contacted' | 'converted';
-  leadType?: 'lead' | 'booking' | 'hybrid';
+  leadType?: 'Lead' | 'BOOKING' | 'HYBRID';
   assignedTo: string | User;
   businessId?: string;
   assignedBusinessId?: string;

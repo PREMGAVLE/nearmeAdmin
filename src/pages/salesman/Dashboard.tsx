@@ -45,6 +45,10 @@ export default function SalesmanDashboard() {
   const categories = categoryData?.data || [];
   const myCategories = myCategoriesData?.data || [];
 
+  console.log('Dashboard - user._id:', user?._id);
+  console.log('Dashboard - myCategoriesData:', myCategoriesData);
+  console.log('Dashboard - myCategories:', myCategories);
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>

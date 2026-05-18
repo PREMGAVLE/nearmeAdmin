@@ -69,7 +69,7 @@ export default function MyUsers() {
                 setBusinessForm({
                     businessName: '',
                     categoryId: '',
-                    businessType: 'leads',
+                    businessType: 'LEAD',
                     contactNumbers: { primary: '', whatsapp: '', alternate: '' },
                     contactPersonName: '',
                     email: '',
