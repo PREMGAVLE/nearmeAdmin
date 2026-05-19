@@ -105,6 +105,13 @@ export interface Verification {
   verifiedAt?: string;
 }
 
+// ===== Document (nested in Business) =====
+export interface BusinessDocument {
+  type: string;
+  file: File;
+  preview?: string;
+}
+
 // ===== Business =====
 export interface Business {
   created_at: string | number | Date;
@@ -124,6 +131,7 @@ export interface Business {
   premiumRequestStatus?: 'none' | 'premium_requested' | 'premium_approved' | 'premium_rejected';
   paymentDetails: PaymentDetails;
   verification: Verification;
+  documents?: BusinessDocument[];
   rejectionReason?: string;
   serviceArea?: string;
   description?: string;
@@ -171,7 +179,7 @@ export interface Lead {
   phone: string;
   message: string;
   status: 'new' | 'contacted' | 'converted';
-  leadType?: 'Lead' | 'BOOKING' | 'HYBRID';
+  leadType?: 'LEAD' | 'BOOKING' | 'HYBRID';
   assignedTo: string | User;
   businessId?: string;
   assignedBusinessId?: string;

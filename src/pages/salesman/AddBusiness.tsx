@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 import { useToast } from '@/hooks/use-toast';
 
-import { Building2, UserPlus, CheckCircle, Plus } from 'lucide-react';
+import { Building2, UserPlus, CheckCircle, Plus, Upload, FileText, X } from 'lucide-react';
 
 import type { BusinessType } from '@/types';
 
@@ -266,21 +266,53 @@ export default function AddBusiness() {
       setNewCategorySection('BUSINESS');
 
     }
-
   }, [isCategoryDialogOpen]);
 
   const { data: appSettings } = useAppSettings();
 
-  // Reset listingType to normal if premiumOverride is off
+  // Document upload
+  const documentTypes = ['Aadhaar Card', 'PAN Card', 'GST Certificate', 'Voter ID', 'Other'] as const;
+  type DocumentType = typeof documentTypes[number];
 
-  useEffect(() => {
+  const [documents, setDocuments] = useState<{ type: DocumentType; file: File; preview?: string }[]>([]);
+  const [selectedDocType, setSelectedDocType] = useState<DocumentType | ''>('');
+  const docRef = useRef<HTMLInputElement>(null);
 
-    if (appSettings && !appSettings.premiumOverride && businessData.listingType === 'premium') {
+  const handleDocSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-      setBusinessData(p => ({ ...p, listingType: 'normal' }));
+      const currentDocType = selectedDocType;
+      if (!currentDocType) return;
 
+      const filtered = documents.filter((d) => d.type !== currentDocType);
+      const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      const newDocument = { type: currentDocType, file, preview };
+
+      setDocuments([...filtered, newDocument]);
+    },
+    [selectedDocType, documents]
+  );
+
+  const removeDocument = (type: DocumentType) => {
+    if (type) {
+      setDocuments(documents.filter((d) => d.type !== type));
     }
+  };
 
+  // Reset file input when document type changes
+  useEffect(() => {
+    if (docRef.current) {
+      docRef.current.value = '';
+    }
+  }, [selectedDocType]);
+
+  // Reset listingType to normal if premiumOverride is off
+  useEffect(() => {
+    if (appSettings && !appSettings.premiumOverride && businessData.listingType === 'premium') {
+      setBusinessData(p => ({ ...p, listingType: 'normal' }));
+    }
   }, [appSettings?.premiumOverride]);
 
   const handleCreateOwner = async (e: React.FormEvent) => {
@@ -1667,6 +1699,77 @@ export default function AddBusiness() {
                 placeholder="WhatsApp link"
 
               />
+
+            </div>
+
+            {/* Document Upload */}
+            <div className="space-y-4 sm:col-span-2">
+              <Label className="text-sm font-medium">Document Upload</Label>
+
+              {/* // Create Mode: Show normal upload interface */}
+              <>
+                {/* Document Type Dropdown */}
+                <div className="space-y-2">
+                  {/* <Label className="text-xs text-muted-foreground">Select Document Type</Label> */}
+                  <Select value={selectedDocType} onValueChange={(value) => setSelectedDocType(value as DocumentType)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select document type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {documentTypes.map((docType) => (
+                        <SelectItem key={docType} value={docType}>
+                          {docType}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Upload Field - Only show after selecting document type */}
+                {selectedDocType && (
+                  <div key={selectedDocType} className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Upload Document</Label>
+                    <input
+                      ref={docRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={handleDocSelect}
+                    />
+
+                    {/* Show uploaded document if exists */}
+                    {(() => {
+                      const uploadedDoc = documents.find((d) => d.type === selectedDocType);
+                      return uploadedDoc ? (
+                        <div className="border rounded-xl p-4 border-success bg-success/5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-success">
+                              <FileText className="h-4 w-4" />
+                              <span className="truncate">{uploadedDoc.file.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeDocument(selectedDocType)}
+                              className="h-6 w-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                          onClick={() => docRef.current?.click()}
+                        >
+                          <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm font-medium">Click to upload document</p>
+                          <p className="text-xs text-muted-foreground mt-1">PNG, JPG, PDF up to 5MB</p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </>
 
             </div>
 
