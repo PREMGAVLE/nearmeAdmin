@@ -85,10 +85,10 @@ export const businessService = {
     return { items, success: true };
   },
 
-  uploadDocument: async (businessId: string, file: File, documentType: string): Promise<any> => {
+  uploadDocument: async (businessId: string, file: File, type: string): Promise<any> => {
     const formData = new FormData();
     formData.append('document', file);
-    formData.append('documentType', documentType);
+    formData.append('type', type);
     const response = await apiClient.post(`/business/${businessId}/document`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -203,6 +203,16 @@ export function useRejectPremiumRequest() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
   });
 }
+
+export function useUploadDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ businessId, file, type }: { businessId: string; file: File; type: string }) =>
+      businessService.uploadDocument(businessId, file, type),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
+  });
+}
+
 export function useSalesmanBusinesses(params?: any) {
   return useQuery({
     queryKey: ['salesman-businesses', params],

@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 import { useCategories, useCreateCategory } from '@/services/categoryService';
 
-import { useCreateBusiness } from '@/services/businessService'
+import { useCreateBusiness, useUploadDocument } from '@/services/businessService'
 
 import { useCreateUser } from '@/services/userService';
 
@@ -28,7 +28,7 @@ import { Building2, UserPlus, CheckCircle, Plus, Upload, FileText, X } from 'luc
 
 import type { BusinessType } from '@/types';
 
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
 import apiClient from '@/lib/apiClient';
 
@@ -45,6 +45,10 @@ export default function AddBusiness() {
   const [searchParams] = useSearchParams();
 
   const navigate = useNavigate();
+
+  const location = useLocation();
+
+  const userDataFromState = location.state?.userData;
 
   const userIdFromUrl = searchParams.get('userId');
 
@@ -66,19 +70,36 @@ export default function AddBusiness() {
 
   useEffect(() => {
 
-    if (userIdFromUrl) {
+    if (userDataFromState) {
 
-      setOwnerId(userIdFromUrl);
+      setOwnerId(userDataFromState._id);
 
-      // User details fetch karke ownerData auto-fill karo
+      console.log('User data from navigation state:', userDataFromState);
 
-      // User fetch API call karna hoga
+      // Prefill business form with user data
+      setBusinessData(prev => ({
+        ...prev,
+        contactPersonName: userDataFromState.name || '',
+        contactNumbers: {
+          ...prev.contactNumbers,
+          primary: userDataFromState.mobile || '',
+          whatsapp: userDataFromState.mobile || ''
+        },
+        email: userDataFromState.email || '',
+        address: {
+          ...prev.address,
+          street: userDataFromState.address || '',
+          city: userDataFromState.city || 'Burhanpur',
+          pincode: '450331'
+        }
+      }));
 
+      console.log('Business data prefilled');
       setStep(2); // Direct business form pe le jao
 
     }
 
-  }, [userIdFromUrl]);
+  }, [userDataFromState]);
 
   // Step 1: Owner form (complete backend fields)
 
@@ -220,6 +241,8 @@ export default function AddBusiness() {
 
   const createBusinessMutation = useCreateBusiness();
 
+  const uploadDocumentMutation = useUploadDocument();
+
   const { data: categoriesData } = useCategories();
 
   const [allCategories, setAllCategories] = useState<any[]>([]);
@@ -246,8 +269,7 @@ export default function AddBusiness() {
       (cat.approvalStatus === 'pending' && cat.createdBy === user?._id)
     )
     .filter((cat: any) =>
-      cat.name.toLowerCase().includes(categorySearch.toLowerCase())
-    );
+      (cat.name || '').toLowerCase().includes((categorySearch || '').toLowerCase()));
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
@@ -368,7 +390,7 @@ export default function AddBusiness() {
       {
 
         onSuccess: (newUser) => {
-
+ 
           toast({ title: 'Owner Created', description: `${newUser.name} has been created successfully` });
 
           setOwnerId(newUser._id);
@@ -421,24 +443,27 @@ export default function AddBusiness() {
           setAllCategories(prev => [...prev, newCategory]);
 
           setBusinessData(p => ({ ...p, categoryId: newCategory._id }));
-          setCategorySearch('');
+          // setCategorySearch('');
 
-          setNewCategoryName('');
+          setCategorySearch(newCategory.name);  // NEW
           setIsCategoryDialogOpen(false);
 
-          /* Refresh disabled to prevent overwriting manually added category
           const fetchAllCategories = async () => {
             try {
               const response = await apiClient.get('/categories');
               setAllCategories(response.data.data || []);
             } catch (error) {
               console.error('Failed to refresh categories:', error);
+              console.error('Document upload error:', error);
+              toast({
+                title: 'Document Upload Warning',
+                description: 'Business created but some documents failed to upload',
+                variant: 'destructive'
+              });
             }
-          };
-          fetchAllCategories();
-          */
+            fetchAllCategories();
+          }
         },
-
         onError: (err: any) => toast({
           title: 'Error',
           description: err?.response?.data?.message || 'Failed to create category',
@@ -470,7 +495,10 @@ export default function AddBusiness() {
 
     createBusinessMutation.mutate(payload, {
 
-      onSuccess: () => {
+      onSuccess: async (createdBusiness: any) => {
+
+        console.log('Business created response:', createdBusiness);
+        console.log('Documents to upload:', documents);
 
         toast({
 
@@ -480,7 +508,37 @@ export default function AddBusiness() {
 
         });
 
-        // Reset                             form
+        // Upload documents if any
+        const businessId = createdBusiness._id || createdBusiness.data?._id;
+        console.log('Business ID for document upload:', businessId);
+
+        if (documents.length > 0 && businessId) {
+          try {
+            for (const doc of documents) {
+              console.log('Uploading document:', doc.type, 'for business:', businessId);
+              await uploadDocumentMutation.mutateAsync({
+                businessId: businessId,
+                file: doc.file,
+                type: doc.type
+              });
+            }
+            toast({
+              title: 'Documents Uploaded',
+              description: `${documents.length} document(s) uploaded successfully`
+            });
+          } catch (error) {
+            console.error('Document upload error:', error);
+            toast({
+              title: 'Document Upload Warning',
+              description: 'Business created but some documents failed to upload',
+              variant: 'destructive'
+            });
+          }
+        } else {
+          console.log('No documents to upload or business ID missing');
+        }
+
+        // Reset form
 
         setStep(1);
 
@@ -530,6 +588,10 @@ export default function AddBusiness() {
 
         setCategorySearch('');
 
+        // Clear documents
+        setDocuments([]);
+        setSelectedDocType('');
+
       },
 
       onError: (err: any) => toast({
@@ -547,9 +609,7 @@ export default function AddBusiness() {
   };
 
   return (
-
     <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 animate-fade-in">
-
       <div>
 
         <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Add New Business</h1>
