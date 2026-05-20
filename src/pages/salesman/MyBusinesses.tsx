@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useBusinesses, useRequestPremium, useSalesmanBusinesses } from '@/services/businessService';
-import { useUsers, useActivateSubscription } from '@/services/userService';
+import { useBusinesses, useRequestPremium } from '@/services/businessService';
+import { useUsersBySalesman, useActivateSubscription } from '@/services/userService';
 import { useCategories } from '@/services/categoryService';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
@@ -29,22 +29,23 @@ export default function MyBusinesses() {
   const [selectedOwner, setSelectedOwner] = useState<User | null>(null);
   const [editOwnerForm, setEditOwnerForm] = useState({ name: '', mobile: '', email: '', city: '' });
 
-  const { data: userData } = useUsers({ limit: 100 });
+  const { data: userData } = useUsersBySalesman({ limit: 100 });
   const { data: categoryData } = useCategories({ limit: 100 });
   const requestPremiumMutation = useRequestPremium();
   const activateSubMutation = useActivateSubscription();
 
- const users = userData?.items || [];
-const categories = categoryData?.items || [];
+ const users = (userData as any)?.data?.items || [];
+const categories = categoryData?.data || [];
 
-const { data, isLoading } = useSalesmanBusinesses({
-  ...filters, 
+const { data, isLoading } = useBusinesses({
+  ...filters,
+  createdBy: user?._id,
   search: search || undefined,
 });
 
 
-  const ownerIds = [...new Set((data?.items || []).map(b => b.ownerId).filter(Boolean))] as string[];
-  const owners = ownerIds.map(id => getUserById(users, id)).filter(Boolean) as User[];
+  // Show all users created by salesman (same as MyUsers page)
+  const owners = users;
 
   const handleRequestPremium = (id: string) => {
     requestPremiumMutation.mutate(id, {
@@ -154,8 +155,8 @@ const { data, isLoading } = useSalesmanBusinesses({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading ? <TableSkeleton cols={9} /> : data?.items?.map((b) => {
-                    const owner = b.ownerId ? getUserById(users, b.ownerId) : null;
+                  {isLoading ? <TableSkeleton cols={9} /> : data?.data?.items?.map((b) => {
+                    const owner = users.length > 0 && b.ownerId ? getUserById(users, b.ownerId) : null;
                     const ownerSubActive = owner?.subscription?.status === 'active';
                     return (
                       <TableRow key={b._id}>
@@ -177,7 +178,7 @@ const { data, isLoading } = useSalesmanBusinesses({
                             </Button>
                           )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <div className="flex justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
@@ -188,7 +189,7 @@ const { data, isLoading } = useSalesmanBusinesses({
                       </TableRow>
                     );
                   })}
-                  {!isLoading && (!data?.items || data.items.length === 0) && (
+                  {!isLoading && (!data?.data?.items || data.data.items.length === 0) && (
                     <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
                   )}
                 </TableBody>

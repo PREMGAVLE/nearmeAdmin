@@ -1,22 +1,25 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useDashboardStats } from '@/services/dashboardService';
 import { useBusinesses } from '@/services/businessService';
 import { StatsCard } from '@/components/StatsCard';
 import { StatsSkeleton } from '@/components/TableSkeleton';
-import { Building2, Crown, CreditCard, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { Building2, Crown, CreditCard, CheckCircle, Clock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 const COLORS = ['hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(0, 72%, 51%)'];
 
 export default function SalesmanPerformance() {
   const { user } = useAuth();
-  const { data: stats, isLoading } = useDashboardStats('salesman', user?._id);
-  const { data: bizData } = useBusinesses({ createdBy: user?._id });
+  const { data: bizData, isLoading } = useBusinesses({ createdBy: user?._id });
 
-  const businesses = bizData?.data || [];
+  const businesses = bizData?.data?.items || [];
+  const totalBusinesses = businesses.length;
   const approved = businesses.filter(b => b.approvalStatus === 'approved').length;
   const pending = businesses.filter(b => b.approvalStatus === 'pending').length;
   const rejected = businesses.filter(b => b.approvalStatus === 'rejected').length;
+  const pendingPremium = businesses.filter(b => b.premiumRequestStatus === 'premium_requested').length;
+  const totalRevenue = businesses
+    .filter(b => b.paymentDetails?.paymentStatus === 'received' || b.paymentDetails?.paymentStatus === 'verified')
+    .reduce((sum, b) => sum + (b.paymentDetails?.amount || 0), 0);
 
   const pieData = [
     { name: 'Approved', value: approved },
@@ -39,13 +42,14 @@ export default function SalesmanPerformance() {
         <p className="text-sm text-muted-foreground">Track your field operations metrics</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {isLoading ? <StatsSkeleton count={4} /> : stats && (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {isLoading ? <StatsSkeleton count={5} /> : (
           <>
-            <StatsCard title="Total Businesses" value={stats.totalBusinesses} icon={Building2} variant="primary" />
-            <StatsCard title="Approved" value={stats.approvedToday} icon={CheckCircle} variant="success" />
-            <StatsCard title="Pending" value={stats.pendingApprovals} icon={Clock} variant="warning" />
-            <StatsCard title="Revenue Collected" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={CreditCard} variant="info" />
+            <StatsCard title="Total Businesses" value={totalBusinesses} icon={Building2} variant="default" />
+            <StatsCard title="Approved" value={approved} icon={CheckCircle} variant="success" />
+            <StatsCard title="Pending" value={pending} icon={Clock} variant="warning" />
+            <StatsCard title="Pending Premium" value={pendingPremium} icon={Crown} variant="premium" />
+            <StatsCard title="Revenue Collected" value={`₹${totalRevenue.toLocaleString()}`} icon={CreditCard} variant="info" />
           </>
         )}
       </div>

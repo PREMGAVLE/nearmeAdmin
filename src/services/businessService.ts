@@ -77,11 +77,25 @@ export const businessService = {
     const response = await apiClient.patch(`/business/${id}/reject-premium-request`);
     return response.data;
   },
-  getSalesmanBusinesses: async (params?: any): Promise<PaginatedResponse<Business>> => {
-  const response = await apiClient.get('/business/salesman/my-businesses', { params });
-  return response.data;
-},
 
+  getSalesmanBusinesses: async (params?: any): Promise<any> => {
+    const response = await apiClient.get(`/business/salesman/my-businesses`, { params });
+    // Backend returns { success: true, data: [items] } not paginated
+    const items = Array.isArray(response.data.data) ? response.data.data : [];
+    return { items, success: true };
+  },
+
+  uploadDocument: async (businessId: string, file: File, documentType: string): Promise<any> => {
+    const formData = new FormData();
+    formData.append('document', file);
+    formData.append('documentType', documentType);
+    const response = await apiClient.post(`/business/${businessId}/document`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };
 
 // ===== React Query Hooks =====
@@ -190,8 +204,8 @@ export function useRejectPremiumRequest() {
   });
 }
 export function useSalesmanBusinesses(params?: any) {
-  return useQuery({ 
-    queryKey: ['salesman-businesses', params], 
-    queryFn: () => businessService.getSalesmanBusinesses(params) 
-  });
+  return useQuery({
+    queryKey: ['salesman-businesses', params],
+    queryFn: () => businessService.getSalesmanBusinesses(params)
+  }) as any;
 }
