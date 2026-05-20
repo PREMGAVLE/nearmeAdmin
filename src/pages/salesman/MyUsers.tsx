@@ -140,7 +140,7 @@ export default function MyUsers() {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => navigate(`/salesman/add-business?userId=${user._id}`)}
+                                                    onClick={() => navigate(`/salesman/add-business`, { state: { userData: user } })}
                                                 >
                                                     <Building2 className="h-4 w-4 mr-1" />
                                                     Add Business
