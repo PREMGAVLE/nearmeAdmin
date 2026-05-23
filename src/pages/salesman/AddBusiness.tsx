@@ -390,7 +390,7 @@ export default function AddBusiness() {
       {
 
         onSuccess: (newUser) => {
- 
+
           toast({ title: 'Owner Created', description: `${newUser.name} has been created successfully` });
 
           setOwnerId(newUser._id);
@@ -476,7 +476,15 @@ export default function AddBusiness() {
   const handleCreateBusiness = async (e: React.FormEvent) => {
 
     e.preventDefault();
-
+    // Validate document upload is required
+    if (documents.length === 0) {
+      toast({
+        title: 'Document Required',
+        description: 'Please upload at least one document to create a business',
+        variant: 'destructive'
+      });
+      return;
+    }
     const payload = {
 
       ...businessData,
@@ -609,14 +617,14 @@ export default function AddBusiness() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 animate-fade-in">
-      <div>
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 animate-fade-in pb-0">      
+    <div>
 
-        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Add New Business</h1>
+      <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Add New Business</h1>
 
-        <p className="text-sm text-muted-foreground">Step {step} of 2 — {step === 1 ? 'Create Owner' : 'Business Details'}</p>
+      <p className="text-sm text-muted-foreground">Step {step} of 2 — {step === 1 ? 'Create Owner' : 'Business Details'}</p>
 
-      </div>
+    </div>
 
       {/* Step indicator */}
 
@@ -658,13 +666,13 @@ export default function AddBusiness() {
 
               <h3 className="font-display font-semibold text-foreground">Step 1: Create Owner/User</h3>
 
-              <p className="text-xs text-muted-foreground">Create the business owner with complete profile</p>
+              <p className="text-[10px] text-muted-foreground">Create the business owner with complete profile</p>
 
             </div>
 
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
 
             <div className="space-y-2 sm:col-span-2">
 
@@ -946,8 +954,7 @@ export default function AddBusiness() {
 
       ) : (
 
-        <form onSubmit={handleCreateBusiness} className="rounded-xl border bg-card card-shadow p-6 space-y-5">
-
+        <form onSubmit={handleCreateBusiness} className="rounded-xl border bg-card card-shadow p-4 sm:p-6 space-y-4 pb-0">
           <div className="flex items-center gap-3 pb-4 border-b border-border">
 
             <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
@@ -1042,7 +1049,7 @@ export default function AddBusiness() {
 
               <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
 
-                <DialogContent>
+                <DialogContent className="max-w-[90vw] sm:max-w-md rounded-lg">
 
                   <DialogHeader>
 
@@ -1550,7 +1557,24 @@ export default function AddBusiness() {
 
             <div className="space-y-2">
 
-              <Label>Service Days</Label>
+              <div className="flex items-center justify-between">
+                <Label>Service Days</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7 px-2"
+                  onClick={() => {
+                    if (businessData.serviceDays.length === 7) {
+                      setBusinessData(p => ({ ...p, serviceDays: [] }));
+                    } else {
+                      setBusinessData(p => ({ ...p, serviceDays: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] }));
+                    }
+                  }}
+                >
+                  {businessData.serviceDays.length === 7 ? 'Clear All' : 'Select All'}
+                </Button>
+              </div>
 
               <div className="grid grid-cols-4 gap-2">
 
@@ -1764,15 +1788,13 @@ export default function AddBusiness() {
 
             {/* Document Upload */}
             <div className="space-y-4 sm:col-span-2">
-              <Label className="text-sm font-medium">Document Upload</Label>
-
-              {/* // Create Mode: Show normal upload interface */}
+              <Label className="text-sm font-medium">Document Upload *</Label>
               <>
                 {/* Document Type Dropdown */}
                 <div className="space-y-2">
                   {/* <Label className="text-xs text-muted-foreground">Select Document Type</Label> */}
-                  <Select value={selectedDocType} onValueChange={(value) => setSelectedDocType(value as DocumentType)}>
-                    <SelectTrigger className="w-full">
+                  <Select required value={selectedDocType} onValueChange={(value) => setSelectedDocType(value as DocumentType)}>
+                    <SelectTrigger className="w-full " >
                       <SelectValue placeholder="Select document type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1795,6 +1817,7 @@ export default function AddBusiness() {
                       accept="image/*,.pdf"
                       className="hidden"
                       onChange={handleDocSelect}
+                      required
                     />
 
                     {/* Show uploaded document if exists */}
@@ -1929,8 +1952,7 @@ export default function AddBusiness() {
 
           </div>
 
-          <div className="flex gap-3">
-
+          <div className="flex gap-3 pb-0 mb-0 mt-0">
             <Button
 
               type="button"

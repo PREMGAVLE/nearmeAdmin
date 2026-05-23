@@ -36,7 +36,7 @@ export default function SalesmanPerformance() {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in mx-2">
       <div>
         <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">My Performance</h1>
         <p className="text-sm text-muted-foreground">Track your field operations metrics</p>

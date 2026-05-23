@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useBusinesses, useRequestPremium } from '@/services/businessService';
-import { useUsersBySalesman, useActivateSubscription } from '@/services/userService';
-import { useCategories } from '@/services/categoryService';
+import { useUsersBySalesman, useActivateSubscription, useUpdateProfile } from '@/services/userService'; import { useCategories } from '@/services/categoryService';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { DataTableHeader } from '@/components/DataTableHeader';
@@ -22,26 +21,28 @@ export default function MyBusinesses() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
+  const updateProfileMutation = useUpdateProfile();
   const [filters, setFilters] = useState<BusinessFilters>({ page: 1, limit: 20 });
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
   const [editOwnerOpen, setEditOwnerOpen] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<User | null>(null);
-  const [editOwnerForm, setEditOwnerForm] = useState({ name: '', mobile: '', email: '', city: '' });
+  const [editOwnerForm, setEditOwnerForm] = useState({ name: '', mobile: '', email: '', address: '' });
 
   const { data: userData } = useUsersBySalesman({ limit: 100 });
+  const { data: ownersData, isLoading: ownersLoading, refetch: refetchOwners } = useUsersBySalesman({ role: 'owner' });
   const { data: categoryData } = useCategories({ limit: 100 });
   const requestPremiumMutation = useRequestPremium();
   const activateSubMutation = useActivateSubscription();
 
- const users = (userData as any)?.data?.items || [];
-const categories = categoryData?.data || [];
+  const users = (userData as any)?.data?.items || [];
+  const categories = categoryData?.data || [];
 
-const { data, isLoading } = useBusinesses({
-  ...filters,
-  createdBy: user?._id,
-  search: search || undefined,
-});
+  const { data, isLoading } = useBusinesses({
+    ...filters,
+    createdBy: user?._id,
+    search: search || undefined,
+  });
 
 
   // Show all users created by salesman (same as MyUsers page)
@@ -60,7 +61,7 @@ const { data, isLoading } = useBusinesses({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in mx-2">
       <div>
         <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">My Businesses</h1>
         <p className="text-sm text-muted-foreground">View and manage businesses you've submitted</p>
@@ -108,15 +109,39 @@ const { data, isLoading } = useBusinesses({
 
       {/* Edit Owner Modal */}
       <Dialog open={editOwnerOpen} onOpenChange={setEditOwnerOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-[92vw] rounded-lg sm:max-w-md">
           <DialogHeader><DialogTitle>Edit Owner Info</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Name</Label><Input value={editOwnerForm.name} onChange={e => setEditOwnerForm(p => ({ ...p, name: e.target.value }))} /></div>
             <div className="space-y-2"><Label>Mobile</Label><Input value={editOwnerForm.mobile} onChange={e => setEditOwnerForm(p => ({ ...p, mobile: e.target.value }))} /></div>
             <div className="space-y-2"><Label>Email</Label><Input value={editOwnerForm.email} onChange={e => setEditOwnerForm(p => ({ ...p, email: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>City</Label><Input value={editOwnerForm.city} onChange={e => setEditOwnerForm(p => ({ ...p, city: e.target.value }))} /></div>
-            <Button className="w-full gradient-primary text-primary-foreground" onClick={() => { toast({ title: 'Owner Updated (mock)' }); setEditOwnerOpen(false); }}>
-              Save Changes
+            <div className="space-y-2"><Label>Address</Label><Input value={editOwnerForm.address} onChange={e => setEditOwnerForm(p => ({ ...p, address: e.target.value }))} /></div>
+            <Button
+              className="w-full gradient-primary text-primary-foreground"
+              onClick={() => {
+                if (selectedOwner) {
+                  updateProfileMutation.mutate(
+                    { id: selectedOwner._id, data: editOwnerForm },
+                    {
+                      onSuccess: () => {
+                        toast({ title: 'Owner Updated Successfully' });
+                        setEditOwnerOpen(false);
+                        refetchOwners();
+                      },
+                      onError: (error: any) => {
+                        toast({
+                          title: 'Error',
+                          description: error.response?.data?.message || 'Failed to update owner',
+                          variant: 'destructive'
+                        });
+                      }
+                    }
+                  );
+                }
+              }}
+              disabled={updateProfileMutation.isPending}
+            >
+              {updateProfileMutation.isPending ? 'Updating...' : 'Save Changes'}
             </Button>
           </div>
         </DialogContent>
@@ -139,19 +164,19 @@ const { data, isLoading } = useBusinesses({
                 ]}
               />
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto mt-4">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Business Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Biz Type</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Approval</TableHead>
-                    <TableHead>Payment</TableHead>
-                    <TableHead>Premium</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className='text-xs'>
+                    <TableHead className="whitespace-nowrap">Business Name</TableHead>
+                    <TableHead className="whitespace-nowrap">Category</TableHead>
+                    <TableHead className="whitespace-nowrap">Biz Type</TableHead>
+                    <TableHead className="whitespace-nowrap">Type</TableHead>
+                    <TableHead className="whitespace-nowrap">Approval</TableHead>
+                    <TableHead className="whitespace-nowrap">Payment</TableHead>
+                    <TableHead className="whitespace-nowrap">Premium</TableHead>
+                    <TableHead className="whitespace-nowrap">Date</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -203,11 +228,11 @@ const { data, isLoading } = useBusinesses({
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className='text-xs'>
                     <TableHead>Name</TableHead>
                     <TableHead>Mobile</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>City</TableHead>
+                    <TableHead>Address</TableHead>
                     <TableHead>Subscription</TableHead>
                     <TableHead>Expiry</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -217,18 +242,18 @@ const { data, isLoading } = useBusinesses({
                   {owners.length === 0 ? (
                     <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No owners linked to your businesses</TableCell></TableRow>
                   ) : owners.map((o) => (
-                    <TableRow key={o._id}>
+                    <TableRow key={o._id} className='text-xs'>
                       <TableCell className="font-medium">{o.name}</TableCell>
                       <TableCell className="text-muted-foreground">{o.mobile}</TableCell>
                       <TableCell className="text-muted-foreground">{o.email}</TableCell>
-                      <TableCell className="text-muted-foreground">{o.city || '—'}</TableCell>
+                      <TableCell className="text-muted-foreground">{o.address || '—'}</TableCell>
                       <TableCell><StatusBadge status={o.subscription?.status || 'none'} /></TableCell>
                       <TableCell className="text-muted-foreground">{o.subscription?.expiryDate ? new Date(o.subscription.expiryDate).toLocaleDateString() : '—'}</TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
                             setSelectedOwner(o);
-                            setEditOwnerForm({ name: o.name, mobile: o.mobile, email: o.email, city: o.city || '' });
+                            setEditOwnerForm({ name: o.name, mobile: o.mobile, email: o.email, address: o.address || '' });
                             setEditOwnerOpen(true);
                           }}>
                             <Pencil className="h-4 w-4" />

@@ -31,7 +31,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 export function StatusBadge({ status }: { status: string }) {
   const config = statusConfig[status] || { label: status, className: 'bg-muted text-muted-foreground border-border' };
   return (
-    <Badge variant="outline" className={config.className}>
+    <Badge variant="outline" className={`${config.className} text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5`}>
       {config.label}
     </Badge>
   );
