@@ -23,8 +23,8 @@ export default function PaymentsPage() {
   const { data: businessesData, isLoading } = useBusinesses({ ...filters, search: search || undefined, limit: 100 });
   const { data: userData } = useUsers({ limit: 100 });
 
-  const users = userData?.data || [];
-  const businesses = businessesData?.data || [];
+  const users = userData?.data?.items || [];
+  const businesses = businessesData?.data?.items || [];
   const verifyMutation = useVerifyPayment();
 
   return (
@@ -52,27 +52,27 @@ export default function PaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Business</TableHead>
-                <TableHead>Created By</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Mode</TableHead>
-                <TableHead>Payment Status</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="whitespace-nowrap">Business</TableHead>
+                <TableHead className="whitespace-nowrap">Created By</TableHead>
+                <TableHead className="whitespace-nowrap">Amount</TableHead>
+                <TableHead className="whitespace-nowrap">Mode</TableHead>
+                <TableHead className="whitespace-nowrap">Payment Status</TableHead>
+                <TableHead className="whitespace-nowrap">Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? <TableSkeleton cols={7} /> : businesses.map((b) => (
                 <TableRow key={b._id}>
-                  <TableCell className="font-medium">{b.businessName}</TableCell>
-                  <TableCell className="text-muted-foreground">{getUserName(users, b.createdBy as string)}</TableCell>
-                  <TableCell className="font-semibold">₹{b.paymentDetails.amount.toLocaleString()}</TableCell>
-                  <TableCell><Badge variant="secondary" className="uppercase text-xs">{b.paymentDetails.paymentMode}</Badge></TableCell>
-                  <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
-                  <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="font-medium whitespace-nowrap">{b.businessName}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{getUserName(users, b.createdBy as string)}</TableCell>
+                  <TableCell className="font-semibold whitespace-nowrap">₹{b.paymentDetails?.amount?.toLocaleString() || 'N/A'}</TableCell>
+                  <TableCell><Badge variant="secondary" className="uppercase text-xs whitespace-nowrap">{b.paymentDetails?.paymentMode || 'N/A'}</Badge></TableCell>
+                  <TableCell><StatusBadge status={b.paymentDetails?.paymentStatus || 'pending'} /></TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{new Date(b.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex justify-end">
-                      {b.paymentDetails.paymentStatus === 'pending' && (
+                      {b.paymentDetails?.paymentStatus === 'pending' && (
                         <Button variant="ghost" size="sm" className="text-success gap-1"
                           onClick={() => verifyMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Payment Verified' }) })}
                           disabled={verifyMutation.isPending}>

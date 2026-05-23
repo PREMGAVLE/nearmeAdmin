@@ -30,14 +30,14 @@ export default function AdminDashboard() {
   const rejectMutation = useRejectBusiness();
 
   const users = userData?.data?.items || [];
-  const categories = categoryData?.data?.items || [];
-  const pendingBusinesses = pendingData?.items || [];
+  const categories = categoryData?.data || [];
+  const pendingBusinesses = pendingData?.data?.items || [];
   const { data: pendingCategoriesData, isLoading: pendingCategoriesLoading } = useCategories({
     approvalStatus: 'pending',
     limit: 50
   });
 
-const pendingCategories = pendingCategoriesData?.data?.items || [];
+const pendingCategories = pendingCategoriesData?.data || [];
 
   // Mock data for demonstration
   const mockSparklineData = [30, 45, 35, 50, 40, 60, 55, 70, 65, 75, 80, 90];
@@ -241,7 +241,7 @@ const pendingCategories = pendingCategoriesData?.data?.items || [];
           </div>
         </div>
         <CategoryApprovalTable
-          categories={categories}
+          categories={pendingCategories}
           users={users}
           isLoading={pendingCategoriesLoading}
           title="Pending Category Approvals"
@@ -251,7 +251,7 @@ const pendingCategories = pendingCategoriesData?.data?.items || [];
         <PendingApprovalsTable
           businesses={pendingBusinesses}
           users={users}
-          categories={categories}
+          categories={pendingCategories}
           onApprove={handleApprove}
           onReject={handleReject}
           isLoading={pendingLoading}
