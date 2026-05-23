@@ -82,12 +82,12 @@ export function CategoryApprovalTable({
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Category Name</TableHead>
-                                <TableHead>Section</TableHead>
-                                <TableHead>Created By</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Created Date</TableHead>
-                                <TableHead>Actions</TableHead>
+                                <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                                <TableHead className="whitespace-nowrap">Section</TableHead>
+                                <TableHead className="whitespace-nowrap">Created By</TableHead>
+                                <TableHead className="whitespace-nowrap">Status</TableHead>
+                                <TableHead className="whitespace-nowrap">Created Date</TableHead>
+                                <TableHead className="whitespace-nowrap">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -119,9 +119,9 @@ export function CategoryApprovalTable({
                                     <TableRow key={category._id}>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center gap-2">
-                                                {category.iconKey && (
+                                                {category.iconKey && Icons[category.iconKey as keyof typeof Icons] && typeof Icons[category.iconKey as keyof typeof Icons] !== 'function' && (
                                                     <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
-                                                        {React.createElement(Icons[category.iconKey as keyof typeof Icons], {
+                                                        {React.createElement(Icons[category.iconKey as keyof typeof Icons] as React.ComponentType<any>, {
                                                             className: "h-4 w-4"
                                                         })}
                                                     </div>

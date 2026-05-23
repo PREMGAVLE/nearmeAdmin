@@ -34,7 +34,7 @@ export default function LeadsPage() {
   const bulkAssignMutation = useBulkAssignLeads();
   const approvedBusinesses = bizData?.data?.items?.filter(b => b.approvalStatus === 'approved') || [];
   const users = userData?.data?.items || [];
-  const categories = categoryData?.data?.items || [];
+  const categories = categoryData?.data || [];
   const handleStatusChange = (id: string, status: Lead['status']) => {
     updateStatusMutation.mutate({ id, status }, {
       onSuccess: () => toast({ title: 'Lead Updated' }),
@@ -122,15 +122,15 @@ export default function LeadsPage() {
           {selectedLead && (
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <div><p className="text-muted-foreground">Customer Name</p><p className="font-medium">{selectedLead.customerName}</p></div>
-                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedLead.phone}</p></div>
-                <div><p className="text-muted-foreground">Status</p><StatusBadge status={selectedLead.status} /></div>
-                <div><p className="text-muted-foreground">Lead Type</p><StatusBadge status={selectedLead.leadType || 'lead'} /></div>
-                <div><p className="text-muted-foreground">Assigned Salesman</p><p className="font-medium">{getUserName(users, selectedLead.assignedTo as string)}</p></div>
-                <div><p className="text-muted-foreground">Source Business</p><p className="font-medium">{selectedLead.businessId ? getBusinessName(approvedBusinesses, selectedLead.businessId) : '—'}</p></div>
-                <div><p className="text-muted-foreground">Assigned Business</p><p className="font-medium">{selectedLead.assignedBusinessId ? getBusinessName(approvedBusinesses, selectedLead.assignedBusinessId) : '—'}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Customer Name</p><p className="font-medium">{selectedLead.customerName}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Phone</p><p className="font-medium">{selectedLead.phone}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Status</p><StatusBadge status={selectedLead.status} /></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Lead Type</p><StatusBadge status={selectedLead.leadType || 'lead'} /></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Assigned Salesman</p><p className="font-medium">{getUserName(users, selectedLead.assignedTo as string)}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Source Business</p><p className="font-medium">{selectedLead.businessId ? getBusinessName(approvedBusinesses, selectedLead.businessId) : '—'}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Assigned Business</p><p className="font-medium">{selectedLead.assignedBusinessId ? getBusinessName(approvedBusinesses, selectedLead.assignedBusinessId) : '—'}</p></div>
                 <div className="col-span-2"><p className="text-muted-foreground">Message</p><p className="font-medium">{selectedLead.message}</p></div>
-                <div><p className="text-muted-foreground">Created At</p><p className="font-medium">{new Date(selectedLead.createdAt).toLocaleString()}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Created At</p><p className="font-medium">{new Date(selectedLead.createdAt).toLocaleString()}</p></div>
               </div>
             </div>
           )}
@@ -160,11 +160,11 @@ export default function LeadsPage() {
                 </TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Lead Type</TableHead>
-                <TableHead>Source Business</TableHead>
+                <TableHead className="whitespace-nowrap">Lead Type</TableHead>
+                <TableHead className="whitespace-nowrap">Source Business</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Assigned Business</TableHead>
-                <TableHead>Assigned Salesman</TableHead>
+                <TableHead className="whitespace-nowrap">Assigned Business</TableHead>
+                <TableHead className="whitespace-nowrap">Assigned Salesman</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -178,13 +178,13 @@ export default function LeadsPage() {
                     <TableCell>
                       <Checkbox checked={selectedIds.includes(lead._id)} onCheckedChange={() => toggleSelect(lead._id)} />
                     </TableCell>
-                    <TableCell className="font-medium">{lead.customerName}</TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">{lead.customerName}</TableCell>
                     <TableCell className="text-muted-foreground">{lead.phone}</TableCell>
                     <TableCell><StatusBadge status={lead.leadType || 'lead'} /></TableCell>
-                    <TableCell className="text-muted-foreground">{srcBiz?.businessName || '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{srcBiz ? getCategoryName(categories, srcBiz.categoryId) : '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{assignBiz?.businessName || '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{getUserName(users, lead.assignedTo as string)}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">{srcBiz?.businessName || '—'}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">{srcBiz ? getCategoryName(categories, srcBiz.categoryId) : '—'}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">{assignBiz?.businessName || '—'}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">{getUserName(users, lead.assignedTo as string)}</TableCell>
                     <TableCell><StatusBadge status={lead.status} /></TableCell>
                     <TableCell>
                       <div className="flex justify-end items-center gap-2">
@@ -213,12 +213,12 @@ export default function LeadsPage() {
             </TableBody>
           </Table>
         </div>
-        {data?.data?.pagination && data.data.pagination.totalPages > 1 && (
+        {data?.data && data.data.total > data.data.limit && (
           <div className="flex items-center justify-between p-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">Page {data.data.pagination.page} of {data.data.pagination.totalPages}</p>
+            <p className="text-sm text-muted-foreground">Page {data.data.page} of {Math.ceil(data.data.total / data.data.limit)}</p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={data.data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
-              <Button variant="outline" size="sm" disabled={data.data.pagination.page >= data.data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
+              <Button variant="outline" size="sm" disabled={data.data.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
+              <Button variant="outline" size="sm" disabled={data.data.page >= Math.ceil(data.data.total / data.data.limit)} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
             </div>
           </div>
         )}

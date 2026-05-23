@@ -104,6 +104,12 @@ export interface PaymentDetails {
 export interface Verification {
   status: 'pending' | 'approved' | 'rejected';
   verifiedAt?: string;
+  document?: {
+    type: string;
+    file: {
+      url: string;
+    };
+  };
 }
 
 // ===== Document (nested in Business) =====

@@ -147,15 +147,15 @@ export function PendingApprovalsTable({
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>Business Name</TableHead>
-                <TableHead>Owner</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Submitted</TableHead>
-                <TableHead>Documents</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="whitespace-nowrap">Business Name</TableHead>
+                <TableHead className="whitespace-nowrap">Owner</TableHead>
+                <TableHead className="whitespace-nowrap">Category</TableHead>
+                <TableHead className="whitespace-nowrap">City</TableHead>
+                <TableHead className="whitespace-nowrap">Payment</TableHead>
+                <TableHead className="whitespace-nowrap">Plan</TableHead>
+                <TableHead className="whitespace-nowrap">Submitted</TableHead>
+                <TableHead className="whitespace-nowrap">Documents</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -183,29 +183,29 @@ export function PendingApprovalsTable({
               ) : (
                 filteredBusinesses.map((business) => (
                   <TableRow key={business._id} className="hover:bg-gray-50">
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <Checkbox 
                         checked={selectedBusinesses.includes(business._id)}
                         onCheckedChange={(checked) => handleSelectBusiness(business._id, checked as boolean)}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{business.businessName}</TableCell>
-                    <TableCell>{users.find(u => u._id === business.createdBy)?.name || 'Unknown'}</TableCell>
-                    <TableCell>{categories.find(c => c._id === business.categoryId)?.name || 'N/A'}</TableCell>
-                    <TableCell>{business.address?.city || 'N/A'}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">{business.businessName}</TableCell>
+                    <TableCell className="whitespace-nowrap">{users.find(u => u._id === business.createdBy)?.name || 'Unknown'}</TableCell>
+                    <TableCell className="whitespace-nowrap">{business.categoryId?.name || categories.find(c => c._id === business.categoryId)?.name || 'N/A'}</TableCell>
+                    <TableCell className="whitespace-nowrap">{business.address?.city || 'N/A'}</TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <span className="text-sm font-medium">₹{business.paymentDetails?.amount || 0}</span>
                         <StatusBadge status={business.paymentDetails?.paymentStatus || 'pending'} />
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <ListingTypeBadge type={business.listingType || 'normal'} />
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">
-                      {new Date(business.createdAt).toLocaleDateString()}
+                    <TableCell className="text-sm text-gray-500 whitespace-nowrap">
+                      {business.submissionDate ? new Date(business.submissionDate).toLocaleDateString() : business.created_at ? new Date(business.created_at).toLocaleDateString() : 'N/A'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {business.verification?.document?.file?.url ? (
                         <Button 
                           size="sm" 
@@ -220,7 +220,7 @@ export function PendingApprovalsTable({
                         <span className="text-xs text-gray-400">No doc</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
                         <Button size="sm" variant="outline" className="h-8 w-8 p-0">
                           <Eye className="h-4 w-4" />
