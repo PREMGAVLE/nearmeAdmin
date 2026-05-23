@@ -57,6 +57,7 @@ export interface User {
   role: UserRole;
   status: 'active' | 'blocked' | 'inactive';
   city?: string;
+  address?: string;
   categoryPreference?: string;
   subscription: Subscription;
   acceptTerms?: boolean;

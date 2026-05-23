@@ -138,6 +138,12 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
+                        onClick={() => {
+                          if (window.innerWidth < 768) {
+                            const trigger = document.querySelector('[data-sidebar="trigger"]') as HTMLButtonElement;
+                            trigger?.click();
+                          }
+                        }}
                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/80 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                       >

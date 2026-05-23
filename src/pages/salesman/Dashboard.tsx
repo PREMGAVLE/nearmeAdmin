@@ -50,13 +50,13 @@ export default function SalesmanDashboard() {
   console.log('Dashboard - myCategories:', myCategories);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Welcome, {user?.name}</h1>
+        <h1 className="font-display text-xl sm:text-xl font-bold text-foreground">Welcome, {user?.name}</h1>
         <p className="text-sm text-muted-foreground">Your field operations overview</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-2 sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-5">
         {statsLoading ? <StatsSkeleton count={5} /> : (
           <>
             <StatsCard title="Total Added" value={totalBusinesses} icon={Building2} variant="default" />
@@ -69,13 +69,13 @@ export default function SalesmanDashboard() {
       </div>
 
       <div className="rounded-xl border bg-card card-shadow">
-        <div className="p-5 border-b border-border">
+        <div className="p-4 border-b border-border">
           <h3 className="font-display font-semibold text-foreground">My Recent Businesses</h3>
         </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className='text-xs'>
                 <TableHead>Business</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Type</TableHead>
@@ -103,27 +103,27 @@ export default function SalesmanDashboard() {
 
       {/* My Categories Status - ONLY VIEW, NO APPROVAL */}
       {myCategoriesError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-2 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600">Error loading categories: {myCategoriesError.message}</p>
         </div>
       )}
-      <Card>
+      <Card className=''>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-md">
             <Folder className="h-5 w-5 text-blue-500" />
             My Categories
           </CardTitle>
-          <CardDescription>Categories you created and their approval status</CardDescription>
+          <CardDescription className='text-[13px]'>Categories you created and their approval status</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-hide">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Category Name</TableHead>
-                  <TableHead>Section</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created Date</TableHead>
+                <TableRow className='text-xs'>
+                  <TableHead className="whitespace-nowrap">Category Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Section</TableHead>
+                  <TableHead className="whitespace-nowrap">Status</TableHead>
+                  <TableHead className="whitespace-nowrap">Created Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,10 +151,10 @@ export default function SalesmanDashboard() {
                       </TableRow>
                     ) : (
                       myCategories.map((category) => (
-                        <TableRow key={category._id}>
+                        <TableRow key={category._id} className='text-xs'>
                           <TableCell className="font-medium">{category.name}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${category.section === 'BUSINESS'
+                            <span className={`px-2 py-1 rounded-full lg:text-sm text-[10px] font-medium ${category.section === 'BUSINESS'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-green-100 text-green-800'
                               }`}>
@@ -165,8 +165,8 @@ export default function SalesmanDashboard() {
                             <StatusBadge status={category.approvalStatus} />
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
+                            <div className="flex items-center gap-1 lg:text-sm text-[10px]">
+                              <Calendar className="lg:h-4 lg:w-4  h-3 w-3" />
                               {category.createdAt ? new Date(category.createdAt).toLocaleDateString() : 'N/A'}
                             </div>
                           </TableCell>

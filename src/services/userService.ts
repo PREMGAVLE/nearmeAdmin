@@ -59,7 +59,11 @@ getUserLeads: async (userId: string): Promise<any[]> => {
     const response = await apiClient.patch(`/users/${id}/role`, { role });
     return response.data;
   },
-
+  // ✅ NEW: Update user profile
+  updateProfile: async (id: string, data: Partial<User>): Promise<User> => {
+    const response = await apiClient.patch(`/users/${id}`, data);
+    return response.data;
+  },
   // ✅ FIXED: Use correct delete endpoint
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
@@ -196,6 +200,16 @@ export function useActivateSubscription() {
     mutationFn: ({ id, subscription }: { id: string; subscription: Partial<Subscription> }) =>
       userService.activateSubscription(id, subscription),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  });
+}
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<User> }) => userService.updateProfile(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['salesman-users'] });
+    },
   });
 }
 export function useUsersBySalesman(params?: any) {
