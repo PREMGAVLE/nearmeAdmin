@@ -1,4 +1,5 @@
 import apiClient from '@/lib/apiClient';
+import { useQuery } from '@tanstack/react-query';
 
 export interface AppSettings {
   premiumOverride: boolean;
@@ -34,3 +35,10 @@ export const appSettingsService = {
     return response.data.data;
   }
 };
+
+export function useAppSettings() {
+  return useQuery({
+    queryKey: ['app-settings'],
+    queryFn: () => appSettingsService.getSettings()
+  });
+}

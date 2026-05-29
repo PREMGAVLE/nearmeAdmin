@@ -28,8 +28,8 @@ export default function PendingApprovals() {
   const rejectMutation = useRejectBusiness();
   const verifyPaymentMutation = useVerifyPayment();
 
-  const users = userData?.items || userData?.data?.items || [];
-  const categories = categoryData?.items || categoryData?.data?.items || [];
+  const users = userData?.data?.items || [];
+  const categories =  categoryData?.data || [];
 
   const handleViewDocument = (business: Business) => {
     if (business.verification?.document?.file?.url) {
@@ -60,21 +60,21 @@ export default function PendingApprovals() {
           {selectedBiz && (
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
-                <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(categories, selectedBiz.categoryId)}</p></div>
-                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
-                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.contactNumbers.primary}</p></div>
-                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address.street}, {selectedBiz.address.city}, {selectedBiz.address.state} - {selectedBiz.address.pincode}</p></div>
-                <div><p className="text-muted-foreground">Created By (Salesman)</p><p className="font-medium">{getUserName(users, selectedBiz.createdBy as string)}</p></div>
-                <div><p className="text-muted-foreground">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Category</p><p className="font-medium">{getCategoryName(categories, selectedBiz.categoryId)}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Phone</p><p className="font-medium">{selectedBiz.contactNumbers.primary}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground whitespace-nowrap">Address</p><p className="font-medium">{selectedBiz.address.street}, {selectedBiz.address.city}, {selectedBiz.address.state} - {selectedBiz.address.pincode}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Created By (Salesman)</p><p className="font-medium">{getUserName(users, selectedBiz.createdBy as string)}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>
               </div>
               <div className="border-t pt-3">
-                <p className="font-semibold mb-2">Payment Details</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount.toLocaleString()}</p></div>
-                  <div><p className="text-muted-foreground">Mode</p><p className="font-medium uppercase">{selectedBiz.paymentDetails.paymentMode}</p></div>
-                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus} /></div>
-                  <div><p className="text-muted-foreground">Verification</p><StatusBadge status={selectedBiz.verification.status} /></div>
+                <p className="font-semibold mb-2 whitespace-nowrap">Payment Details</p>
+                <div className="grid grid-cols-2 gap-3 whitespace-nowrap">
+                  <div><p className="text-muted-foreground whitespace-nowrap">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount?.toLocaleString() || 'N/A'}</p></div>
+                  <div><p className="text-muted-foreground whitespace-nowrap">Mode</p><p className="font-medium uppercase">{selectedBiz.paymentDetails.paymentMode || 'N/A'}</p></div>
+                  <div><p className="text-muted-foreground whitespace-nowrap">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus || 'pending'} /></div>
+                  <div><p className="text-muted-foreground whitespace-nowrap">Verification</p><StatusBadge status={selectedBiz.verification?.status || 'pending'} /></div>
                   {selectedBiz.paymentDetails.paymentNote && (
                     <div className="col-span-2"><p className="text-muted-foreground">Note</p><p className="font-medium">{selectedBiz.paymentDetails.paymentNote}</p></div>
                   )}
@@ -131,27 +131,27 @@ export default function PendingApprovals() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Business</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Created By</TableHead>
-                <TableHead>Type Requested</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Payment Mode</TableHead>
-                <TableHead>Payment Status</TableHead>
-                <TableHead>Verification</TableHead>
-                <TableHead>Documents</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="whitespace-nowrap">Business</TableHead>
+                <TableHead className="whitespace-nowrap">Category</TableHead>
+                <TableHead className="whitespace-nowrap">Created By</TableHead>
+                <TableHead className="whitespace-nowrap">Type Requested</TableHead>
+                <TableHead className="whitespace-nowrap">Amount</TableHead>
+                <TableHead className="whitespace-nowrap">Payment Mode</TableHead>
+                <TableHead className="whitespace-nowrap">Payment Status</TableHead>
+                <TableHead className="whitespace-nowrap">Verification</TableHead>
+                <TableHead className="whitespace-nowrap">Documents</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? <TableSkeleton cols={10} /> : data?.data?.items?.map((b) => (
                 <TableRow key={b._id}>
-                  <TableCell className="font-medium">{b.businessName}</TableCell>
-                  <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
-                  <TableCell className="text-muted-foreground">{getUserName(users, b.createdBy as string)}</TableCell>
+                  <TableCell className="font-medium whitespace-nowrap">{b.businessName}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{getCategoryName(categories, b.categoryId)}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{getUserName(users, b.createdBy as string)}</TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
-                  <TableCell className="font-semibold">₹{b.paymentDetails?.amount?.toLocaleString() || 'N/A'}</TableCell>
-                  <TableCell className="uppercase text-xs font-medium text-muted-foreground">{b.paymentDetails?.paymentMode || 'N/A'}</TableCell>
+                  <TableCell className="font-semibold whitespace-nowrap">₹{b.paymentDetails?.amount?.toLocaleString() || 'N/A'}</TableCell>
+                  <TableCell className="uppercase text-xs font-medium text-muted-foreground whitespace-nowrap">{b.paymentDetails?.paymentMode || 'N/A'}</TableCell>
                   <TableCell><StatusBadge status={b.paymentDetails?.paymentStatus || 'pending'} /></TableCell>
                   <TableCell><StatusBadge status={b.verification?.status} /></TableCell>
                   <TableCell>

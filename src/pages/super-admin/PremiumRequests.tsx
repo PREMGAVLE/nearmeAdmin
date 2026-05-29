@@ -23,7 +23,7 @@ export default function PremiumRequestsPage() {
   const approveMutation = useApprovePremiumRequest();
   const rejectMutation = useRejectPremiumRequest();
 
-  const users = userData?.data || [];
+  const users = userData?.data?.items || [];
   const categories = categoryData?.data || [];
 
   return (
@@ -39,26 +39,26 @@ export default function PremiumRequestsPage() {
           {selectedBiz && (
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
-                <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(categories, selectedBiz.categoryId)}</p></div>
-                <div><p className="text-muted-foreground">Business Type</p><StatusBadge status={selectedBiz.businessType} /></div>
-                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
-                <div><p className="text-muted-foreground">Created By</p><p className="font-medium">{getUserName(users, selectedBiz.createdBy as string)}</p></div>
-                <div><p className="text-muted-foreground">Approval Status</p><StatusBadge status={selectedBiz.approvalStatus} /></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Category</p><p className="font-medium">{getCategoryName(categories, selectedBiz.categoryId)}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Business Type</p><StatusBadge status={selectedBiz.businessType} /></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Created By</p><p className="font-medium">{getUserName(users, selectedBiz.createdBy as string)}</p></div>
+                <div><p className="text-muted-foreground whitespace-nowrap">Approval Status</p><StatusBadge status={selectedBiz.approvalStatus} /></div>
                 {selectedBiz.ownerId && (() => {
                   const owner = getUserById(users, selectedBiz.ownerId);
                   return owner ? (
                     <>
-                      <div><p className="text-muted-foreground">Owner</p><p className="font-medium">{owner.name}</p></div>
-                      <div><p className="text-muted-foreground">Owner Subscription</p><StatusBadge status={owner.subscription?.status || 'none'} /></div>
+                      <div><p className="text-muted-foreground whitespace-nowrap">Owner</p><p className="font-medium">{owner.name}</p></div>
+                      <div><p className="text-muted-foreground whitespace-nowrap">Owner Subscription</p><StatusBadge status={owner.subscription?.status || 'none'} /></div>
                     </>
                   ) : null;
                 })()}
               </div>
               <div className="border-t pt-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount.toLocaleString()}</p></div>
-                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus} /></div>
+                  <div><p className="text-muted-foreground whitespace-nowrap">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails?.amount?.toLocaleString() || 'N/A'}</p></div>
+                  <div><p className="text-muted-foreground whitespace-nowrap">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails?.paymentStatus || 'pending'} /></div>
                 </div>
               </div>
             </div>
@@ -82,15 +82,15 @@ export default function PremiumRequestsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableSkeleton cols={8} /> : data?.data?.map((b) => (
+              {isLoading ? <TableSkeleton cols={8} /> : data?.data?.items?.map((b) => (
                 <TableRow key={b._id}>
-                  <TableCell className="font-medium">{b.businessName}</TableCell>
-                  <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
-                  <TableCell className="text-muted-foreground">{b.address.city}</TableCell>
+                  <TableCell className="font-medium whitespace-nowrap">{b.businessName}</TableCell>
+                  <TableCell className="text-muted- whitespace-nowrap">{getCategoryName(categories, b.categoryId)}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{b.address.city}</TableCell>
                   <TableCell><StatusBadge status={b.businessType} /></TableCell>
-                  <TableCell className="text-muted-foreground">{getUserName(users, b.createdBy as string)}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{getUserName(users, b.createdBy as string)}</TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
-                  <TableCell className="font-semibold">₹{b.paymentDetails.amount.toLocaleString()}</TableCell>
+                  <TableCell className="font-semibold whitespace-nowrap">₹{b.paymentDetails?.amount?.toLocaleString() || 'N/A'}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
@@ -110,7 +110,7 @@ export default function PremiumRequestsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (!data?.data || data.data.length === 0) && (
+              {!isLoading && (!data?.data?.items || data.data.items.length === 0) && (
                 <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No premium requests</TableCell></TableRow>
               )}
             </TableBody>

@@ -1,10 +1,13 @@
 import apiClient from '@/lib/apiClient';
-import type { Category, CategoryFilters, PaginatedResponse, PaginationParams } from '@/types';
+import type { Category, CategoryFilters, ApiResponse, PaginationParams } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const categoryService = {
-  getAll: async (params?: CategoryFilters): Promise<PaginatedResponse<Category>> => {
-    const response = await apiClient.get('/categories/public', { params });
+  getAll: async (params?: CategoryFilters): Promise<ApiResponse<Category[]>> => {
+    // Use /categories endpoint when filters are provided (e.g., createdBy, approvalStatus)
+    // Otherwise use /categories/public for approved categories only
+    const endpoint = (params && (params.createdBy || params.approvalStatus)) ? '/categories' : '/categories/public';
+    const response = await apiClient.get(endpoint, { params });
     return response.data;
   },
 
