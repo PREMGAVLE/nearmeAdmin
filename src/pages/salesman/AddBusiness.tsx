@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 import { useCategories, useCreateCategory } from '@/services/categoryService';
 
-import { useCreateBusiness, useUploadDocument } from '@/services/businessService'
+import { useCreateBusiness, useUploadDocument, useUploadLogo } from '@/services/businessService'
 
 import { useCreateUser } from '@/services/userService';
 
@@ -243,10 +243,13 @@ export default function AddBusiness() {
 
   const uploadDocumentMutation = useUploadDocument();
 
+  const uploadLogoMutation = useUploadLogo();
+
   const { data: categoriesData } = useCategories();
 
   const [allCategories, setAllCategories] = useState<any[]>([]);
   const [categorySearch, setCategorySearch] = useState('');
+  const [selectedCategoryName, setSelectedCategoryName] = useState('');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   // Fetch all categories including pending
@@ -268,8 +271,11 @@ export default function AddBusiness() {
       cat.approvalStatus === 'approved' ||
       (cat.approvalStatus === 'pending' && cat.createdBy === user?._id)
     )
-    .filter((cat: any) =>
-      (cat.name || '').toLowerCase().includes((categorySearch || '').toLowerCase()));
+    .filter((cat: any) => {
+      const searchTerm = (categorySearch || '').toLowerCase();
+      const name = (cat.name || '').toLowerCase();
+      return name.includes(searchTerm);
+    });
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
@@ -300,6 +306,11 @@ export default function AddBusiness() {
   const [selectedDocType, setSelectedDocType] = useState<DocumentType | ''>('');
   const docRef = useRef<HTMLInputElement>(null);
 
+  // Logo upload
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | undefined>(undefined);
+  const logoRef = useRef<HTMLInputElement>(null);
+
   const handleDocSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -320,6 +331,26 @@ export default function AddBusiness() {
   const removeDocument = (type: DocumentType) => {
     if (type) {
       setDocuments(documents.filter((d) => d.type !== type));
+    }
+  };
+
+  const handleLogoSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      setLogoFile(file);
+      setLogoPreview(preview);
+    },
+    []
+  );
+
+  const removeLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(undefined);
+    if (logoRef.current) {
+      logoRef.current.value = '';
     }
   };
 
@@ -443,9 +474,8 @@ export default function AddBusiness() {
           setAllCategories(prev => [...prev, newCategory]);
 
           setBusinessData(p => ({ ...p, categoryId: newCategory._id }));
-          // setCategorySearch('');
-
-          setCategorySearch(newCategory.name);  // NEW
+          setSelectedCategoryName(newCategory.name);
+          setCategorySearch('');
           setIsCategoryDialogOpen(false);
 
           const fetchAllCategories = async () => {
@@ -546,6 +576,28 @@ export default function AddBusiness() {
           console.log('No documents to upload or business ID missing');
         }
 
+        // Upload logo if provided
+        if (logoFile && businessId) {
+          try {
+            console.log('Uploading logo for business:', businessId);
+            await uploadLogoMutation.mutateAsync({
+              businessId: businessId,
+              file: logoFile
+            });
+            toast({
+              title: 'Logo Uploaded',
+              description: 'Logo uploaded successfully'
+            });
+          } catch (error) {
+            console.error('Logo upload error:', error);
+            toast({
+              title: 'Logo Upload Warning',
+              description: 'Business created but logo failed to upload',
+              variant: 'destructive'
+            });
+          }
+        }
+
         // Reset form
 
         setStep(1);
@@ -595,10 +647,18 @@ export default function AddBusiness() {
         });
 
         setCategorySearch('');
+        setSelectedCategoryName('');
 
         // Clear documents
         setDocuments([]);
         setSelectedDocType('');
+
+        // Clear logo
+        setLogoFile(null);
+        setLogoPreview(undefined);
+        if (logoRef.current) {
+          logoRef.current.value = '';
+        }
 
       },
 
@@ -1003,11 +1063,12 @@ export default function AddBusiness() {
                 <Input
                   id="business-category"
                   placeholder="Search or select category..."
-                  value={categorySearch || filteredCategories.find(c => c._id === businessData.categoryId)?.name || ''}
+                  value={categorySearch || selectedCategoryName}
                   onChange={e => {
                     setCategorySearch(e.target.value);
                     if (e.target.value === '') {
                       setBusinessData(p => ({ ...p, categoryId: '' }));
+                      setSelectedCategoryName('');
                     }
                   }}
                   onFocus={() => setIsCategoryDropdownOpen(true)}
@@ -1020,9 +1081,11 @@ export default function AddBusiness() {
                         <div
                           key={c._id}
                           className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
-                          onClick={() => {
+                          onMouseDown={(e) => {
+                            e.preventDefault();
                             setBusinessData(p => ({ ...p, categoryId: c._id }));
                             setCategorySearch('');
+                            setSelectedCategoryName(c.name);
                             setIsCategoryDropdownOpen(false);
                           }}
                         >
@@ -1714,76 +1777,50 @@ export default function AddBusiness() {
 
             </div>
 
-            <div className="space-y-2">
-
-              <Label htmlFor="instagram">Instagram</Label>
-
-              <Input
-
-                id="instagram"
-
-                value={businessData.socialLinks.instagram}
-
-                onChange={e => setBusinessData(p => ({
-
-                  ...p,
-
-                  socialLinks: { ...p.socialLinks, instagram: e.target.value }
-
-                }))}
-
-                placeholder="Instagram handle"
-
+            {/* Logo Upload */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-sm font-medium">Business Logo</Label>
+              <input
+                ref={logoRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoSelect}
               />
-
-            </div>
-
-            <div className="space-y-2">
-
-              <Label htmlFor="facebook">Facebook</Label>
-
-              <Input
-
-                id="facebook"
-
-                value={businessData.socialLinks.facebook}
-
-                onChange={e => setBusinessData(p => ({
-
-                  ...p,
-
-                  socialLinks: { ...p.socialLinks, facebook: e.target.value }
-
-                }))}
-
-                placeholder="Facebook page"
-
-              />
-
-            </div>
-
-            <div className="space-y-2">
-
-              <Label htmlFor="whatsapp-link">WhatsApp</Label>
-
-              <Input
-
-                id="whatsapp-link"
-
-                value={businessData.socialLinks.whatsapp}
-
-                onChange={e => setBusinessData(p => ({
-
-                  ...p,
-
-                  socialLinks: { ...p.socialLinks, whatsapp: e.target.value }
-
-                }))}
-
-                placeholder="WhatsApp link"
-
-              />
-
+              {logoPreview ? (
+                <div className="border rounded-xl p-4 border-success bg-success/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {logoPreview && (
+                        <img
+                          src={logoPreview}
+                          alt="Logo preview"
+                          className="h-16 w-16 object-cover rounded-lg"
+                        />
+                      )}
+                      <div className="text-sm text-success">
+                        <span className="font-medium">{logoFile?.name}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeLogo}
+                      className="h-6 w-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => logoRef.current?.click()}
+                >
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium">Click to upload logo</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB (Optional)</p>
+                </div>
+              )}
             </div>
 
             {/* Document Upload */}

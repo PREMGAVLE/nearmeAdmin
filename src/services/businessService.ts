@@ -96,6 +96,17 @@ export const businessService = {
     });
     return response.data;
   },
+
+  uploadLogo: async (businessId: string, file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await apiClient.post(`/business/${businessId}/logo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };
 
 // ===== React Query Hooks =====
@@ -209,6 +220,15 @@ export function useUploadDocument() {
   return useMutation({
     mutationFn: ({ businessId, file, type }: { businessId: string; file: File; type: string }) =>
       businessService.uploadDocument(businessId, file, type),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
+  });
+}
+
+export function useUploadLogo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ businessId, file }: { businessId: string; file: File }) =>
+      businessService.uploadLogo(businessId, file),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
   });
 }
