@@ -168,6 +168,7 @@ export default function MyBusinesses() {
               <Table>
                 <TableHeader>
                   <TableRow className='text-xs'>
+                    <TableHead className="whitespace-nowrap">Logo</TableHead>
                     <TableHead className="whitespace-nowrap">Business Name</TableHead>
                     <TableHead className="whitespace-nowrap">Category</TableHead>
                     <TableHead className="whitespace-nowrap">Biz Type</TableHead>
@@ -180,11 +181,24 @@ export default function MyBusinesses() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading ? <TableSkeleton cols={9} /> : data?.data?.items?.map((b) => {
+                  {isLoading ? <TableSkeleton cols={10} /> : data?.data?.items?.map((b) => {
                     const owner = users.length > 0 && b.ownerId ? getUserById(users, b.ownerId) : null;
                     const ownerSubActive = owner?.subscription?.status === 'active';
                     return (
                       <TableRow key={b._id}>
+                        <TableCell>
+                          {(b.logo as any)?.url ? (
+                            <img
+                              src={(b.logo as any).url}
+                              alt={b.businessName}
+                              className="h-10 w-10 object-cover rounded-sm"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
+                              No Logo
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">{b.businessName}</TableCell>
                         <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
                         <TableCell><StatusBadge status={b.businessType} /></TableCell>
@@ -215,7 +229,7 @@ export default function MyBusinesses() {
                     );
                   })}
                   {!isLoading && (!data?.data?.items || data.data.items.length === 0) && (
-                    <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -246,7 +260,11 @@ export default function MyBusinesses() {
                       <TableCell className="font-medium">{o.name}</TableCell>
                       <TableCell className="text-muted-foreground">{o.mobile}</TableCell>
                       <TableCell className="text-muted-foreground">{o.email}</TableCell>
-                      <TableCell className="text-muted-foreground">{o.address || '—'}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                      {typeof o.address === 'object' && o.address !== null
+                        ? o.address.city || '—'
+                        : o.address || '—'}
+                    </TableCell>
                       <TableCell><StatusBadge status={o.subscription?.status || 'none'} /></TableCell>
                       <TableCell className="text-muted-foreground">{o.subscription?.expiryDate ? new Date(o.subscription.expiryDate).toLocaleDateString() : '—'}</TableCell>
                       <TableCell>

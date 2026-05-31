@@ -27,13 +27,39 @@ export default function SalesmanPerformance() {
     { name: 'Rejected', value: rejected },
   ].filter(d => d.value > 0);
 
-  const monthlyData = [
-    { month: 'Oct', count: 1 },
-    { month: 'Nov', count: 1 },
-    { month: 'Dec', count: 2 },
-    { month: 'Jan', count: 2 },
-    { month: 'Feb', count: 1 },
-  ];
+  // Calculate monthly additions from actual business data
+  const monthlyData = (() => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyCounts: { [key: string]: number } = {};
+
+    // Initialize last 6 months with 0
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      monthlyCounts[key] = 0;
+    }
+
+    // Count businesses by month
+    businesses.forEach(b => {
+      const createdAt = new Date(b.created_at || b.createdAt);
+      const key = `${createdAt.getFullYear()}-${createdAt.getMonth()}`;
+      if (monthlyCounts.hasOwnProperty(key)) {
+        monthlyCounts[key]++;
+      }
+    });
+
+    // Convert to array for chart
+    return Object.keys(monthlyCounts)
+      .sort()
+      .map(key => {
+        const [year, month] = key.split('-').map(Number);
+        return {
+          month: monthNames[month],
+          count: monthlyCounts[key]
+        };
+      });
+  })();
 
   return (
     <div className="space-y-6 animate-fade-in mx-2">

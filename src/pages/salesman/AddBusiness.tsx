@@ -465,34 +465,28 @@ export default function AddBusiness() {
       },
       {
         onSuccess: (newCategory) => {
+          const categoryData = (newCategory as any).data || newCategory;
           toast({
             title: 'Category Created',
-            description: `${newCategory.name} has been created and sent for approval`
+            description: `${categoryData.name} has been created and sent for approval`
           });
 
-          // Add new category to allCategories immediately so it shows in dropdown
-          setAllCategories(prev => [...prev, newCategory]);
+          console.log('New category created:', newCategory);
+          console.log('Category data:', categoryData);
 
-          setBusinessData(p => ({ ...p, categoryId: newCategory._id }));
-          setSelectedCategoryName(newCategory.name);
-          setCategorySearch('');
+          // Add new category to allCategories immediately so it shows in dropdown
+          setAllCategories(prev => [...prev, categoryData]);
+
+          // Close dialog first
           setIsCategoryDialogOpen(false);
 
-          const fetchAllCategories = async () => {
-            try {
-              const response = await apiClient.get('/categories');
-              setAllCategories(response.data.data || []);
-            } catch (error) {
-              console.error('Failed to refresh categories:', error);
-              console.error('Document upload error:', error);
-              toast({
-                title: 'Document Upload Warning',
-                description: 'Business created but some documents failed to upload',
-                variant: 'destructive'
-              });
-            }
-            fetchAllCategories();
-          }
+          // Then set the selected category after a small delay to ensure dialog is closed
+          setTimeout(() => {
+            console.log('Setting selected category after delay:', categoryData.name);
+            setBusinessData(p => ({ ...p, categoryId: categoryData._id }));
+            setSelectedCategoryName(categoryData.name);
+            setCategorySearch('');
+          }, 100);
         },
         onError: (err: any) => toast({
           title: 'Error',
@@ -1065,13 +1059,17 @@ export default function AddBusiness() {
                   placeholder="Search or select category..."
                   value={categorySearch || selectedCategoryName}
                   onChange={e => {
+                    console.log('Input onChange:', e.target.value);
                     setCategorySearch(e.target.value);
                     if (e.target.value === '') {
                       setBusinessData(p => ({ ...p, categoryId: '' }));
                       setSelectedCategoryName('');
                     }
                   }}
-                  onFocus={() => setIsCategoryDropdownOpen(true)}
+                  onFocus={() => {
+                    console.log('Input onFocus');
+                    setIsCategoryDropdownOpen(true);
+                  }}
                   onBlur={() => setTimeout(() => setIsCategoryDropdownOpen(false), 200)}
                 />
                 {isCategoryDropdownOpen && (
@@ -1097,8 +1095,8 @@ export default function AddBusiness() {
                     )}
                     <div
                       className="px-3 py-2 hover:bg-accent cursor-pointer text-sm border-t border-border"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onMouseDown={(e) => {
+                        e.preventDefault();
                         setIsCategoryDialogOpen(true);
                         setIsCategoryDropdownOpen(false);
                       }}

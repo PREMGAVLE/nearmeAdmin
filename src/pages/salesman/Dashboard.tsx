@@ -76,6 +76,7 @@ export default function SalesmanDashboard() {
           <Table>
             <TableHeader>
               <TableRow className='text-xs'>
+                <TableHead>Logo</TableHead>
                 <TableHead>Business</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Type</TableHead>
@@ -84,8 +85,21 @@ export default function SalesmanDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.data?.items?.map((b) => (
+              {businessesLoading ? <TableSkeleton cols={6} /> : businessesData?.data?.items?.map((b) => (
                 <TableRow key={b._id}>
+                  <TableCell>
+                    {(b.logo as any)?.url ? (
+                      <img
+                        src={(b.logo as any).url}
+                        alt={b.businessName}
+                        className="h-10 w-10 object-cover rounded-sm"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
+                        No Logo
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(categories, b.categoryId)}</TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
@@ -94,7 +108,7 @@ export default function SalesmanDashboard() {
                 </TableRow>
               ))}
               {!businessesLoading && (!businessesData?.data?.items || businessesData.data.items.length === 0) && (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No businesses yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No businesses yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
