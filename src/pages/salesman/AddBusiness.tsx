@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 import { useToast } from '@/hooks/use-toast';
 
-import { Building2, UserPlus, CheckCircle, Plus, Upload, FileText, X } from 'lucide-react';
+import { Building2, UserPlus, CheckCircle, Plus, Upload, FileText, X, Eye, EyeOff } from 'lucide-react';
 
 import type { BusinessType } from '@/types';
 
@@ -39,6 +39,8 @@ export default function AddBusiness() {
   const { user } = useAuth();
 
   const [step, setStep] = useState<1 | 2>(1);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [ownerId, setOwnerId] = useState('');
 
@@ -88,7 +90,7 @@ export default function AddBusiness() {
         email: userDataFromState.email || '',
         address: {
           ...prev.address,
-          street: userDataFromState.address || '',
+          area: userDataFromState.address || '',
           city: userDataFromState.city || 'Burhanpur',
           pincode: '450331'
         }
@@ -420,11 +422,35 @@ export default function AddBusiness() {
 
       {
 
-        onSuccess: (newUser) => {
+        onSuccess: (newUser: any) => {
 
-          toast({ title: 'Owner Created', description: `${newUser.name} has been created successfully` });
+          console.log('Owner created response:', newUser);
 
-          setOwnerId(newUser._id);
+          const userData = newUser.data || newUser;
+
+          toast({ title: 'Owner Created', description: `${userData.name} has been created successfully` });
+
+          setOwnerId(userData._id || userData.id);
+
+          // Prefill business form with owner data
+          setBusinessData(prev => ({
+            ...prev,
+            contactPersonName: userData.name || '',
+            contactNumbers: {
+              ...prev.contactNumbers,
+              primary: userData.mobile || '',
+              whatsapp: userData.mobile || ''
+            },
+            email: userData.email || '',
+            address: {
+              ...prev.address,
+              area: userData.address || '',
+              city: userData.city || 'Burhanpur',
+              pincode: '450331'
+            }
+          }));
+
+          console.log('Business data after prefill:', businessData);
 
           setStep(2);
 
@@ -806,23 +832,43 @@ export default function AddBusiness() {
 
               <Label htmlFor="owner-password">Password *</Label>
 
-              <Input
+              <div className="relative">
 
-                id="owner-password"
+                <Input
 
-                type="password"
+                  id="owner-password"
 
-                value={ownerData.password}
+                  type={showPassword ? 'text' : 'password'}
 
-                onChange={e => setOwnerData(p => ({ ...p, password: e.target.value }))}
+                  value={ownerData.password}
 
-                required
+                  onChange={e => setOwnerData(p => ({ ...p, password: e.target.value }))}
 
-                minLength={8}
+                  required
 
-                placeholder="Min 8 characters"
+                  minLength={8}
 
-              />
+                  placeholder="Min 8 characters"
+
+                  className="pr-10"
+
+                />
+
+                <button
+
+                  type="button"
+
+                  onClick={() => setShowPassword(!showPassword)}
+
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+
+                >
+
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+
+                </button>
+
+              </div>
 
             </div>
 
@@ -846,7 +892,7 @@ export default function AddBusiness() {
 
             <div className="space-y-2 sm:col-span-2">
 
-              <Label htmlFor="owner-address">Address</Label>
+              <Label htmlFor="owner-address">Address (area)</Label>
 
               <Textarea
 

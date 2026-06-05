@@ -264,13 +264,13 @@ export default function MyUsers() {
                                                         />
                                                     </div>
                                                     <div className="space-y-2 md:col-span-2">
-                                                        <Label htmlFor="street">Address</Label>
+                                                        <Label htmlFor="area">Address</Label>
                                                         <Input
-                                                            id="street"
-                                                            value={businessForm.address.street}
+                                                            id="area"
+                                                            value={businessForm.address.area}
                                                             onChange={(e) => setBusinessForm(p => ({
                                                                 ...p,
-                                                                address: { ...p.address, street: e.target.value }
+                                                                address: { ...p.address, area: e.target.value }
                                                             }))}
                                                             placeholder="Street address"
                                                             maxLength={120}
