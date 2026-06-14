@@ -36,6 +36,8 @@ export function CategoryApprovalTable({
     console.log('CategoryApprovalTable - Received categories:', categories);
     console.log('CategoryApprovalTable - Categories length:', categories.length);
     console.log('CategoryApprovalTable - Is loading:', isLoading);
+    console.log('CategoryApprovalTable - Sample createdBy data:', categories[0]?.createdBy);
+    console.log('CategoryApprovalTable - All createdBy data:', categories.map(cat => ({ id: cat._id, createdBy: cat.createdBy })));
 
     // Remove the redundant filter since we're already passing pending categories
     const pendingCategories = categories; // Already filtered by API
@@ -140,7 +142,12 @@ export function CategoryApprovalTable({
                                         <TableCell className="text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                                 <User className="h-4 w-4" />
-                                                {getUserName(users, category.createdBy as string)}
+                                                {typeof category.createdBy === 'object' && category.createdBy?.name
+                                                    ? category.createdBy.name
+                                                    : typeof category.createdBy === 'string'
+                                                    ? category.createdBy.substring(0, 8) + '...'
+                                                    : 'Unknown'
+                                                }
                                             </div>
                                         </TableCell>
                                         <TableCell>

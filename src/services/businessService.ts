@@ -28,18 +28,22 @@ export const businessService = {
   },
 
   approve: async (id: string): Promise<Business> => {
+    console.log('Approving business:', id);
     const response = await apiClient.patch(`/business/admin/${id}/approve`, {
       approvalStatus: 'approved',
       listingType: 'normal'
     });
+    console.log('Approve response:', response.data);
     return response.data;
   },
 
   reject: async (id: string, rejectionReason: string): Promise<Business> => {
-    const response = await apiClient.patch(`/business/${id}/verify`, {
-      status: 'rejected',
-      note: rejectionReason
+    console.log('Rejecting business:', id, 'reason:', rejectionReason);
+    const response = await apiClient.patch(`/business/admin/${id}/approve`, {
+      approvalStatus: 'rejected',
+      rejectReason: rejectionReason
     });
+    console.log('Reject response:', response.data);
     return response.data;
   },
 
@@ -146,7 +150,37 @@ export function useApproveBusiness() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => businessService.approve(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
+    onSuccess: (data, variables) => {
+      console.log('Approve mutation succeeded, response:', data);
+      console.log('Manually updating cache to remove business from pending list');
+      // Update all business queries to remove this business from pending lists
+      qc.setQueriesData({ queryKey: ['business'] }, (oldData: any) => {
+        if (!oldData) return oldData;
+        if (oldData.data?.items) {
+          // Paginated response
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              items: oldData.data.items.filter((b: any) => b._id !== variables)
+            }
+          };
+        } else if (Array.isArray(oldData.data)) {
+          // Array response
+          return {
+            ...oldData,
+            data: oldData.data.filter((b: any) => b._id !== variables)
+          };
+        }
+        return oldData;
+      });
+      // Also invalidate to ensure fresh data
+      qc.invalidateQueries({ queryKey: ['business'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: (error) => {
+      console.error('Approve mutation failed:', error);
+    },
   });
 }
 
@@ -155,7 +189,37 @@ export function useRejectBusiness() {
   return useMutation({
     mutationFn: ({ id, rejectionReason }: { id: string; rejectionReason: string }) =>
       businessService.reject(id, rejectionReason),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['business'] }),
+    onSuccess: (data, variables) => {
+      console.log('Reject mutation succeeded, response:', data);
+      console.log('Manually updating cache to remove business from pending list');
+      // Update all business queries to remove this business from pending lists
+      qc.setQueriesData({ queryKey: ['business'] }, (oldData: any) => {
+        if (!oldData) return oldData;
+        if (oldData.data?.items) {
+          // Paginated response
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              items: oldData.data.items.filter((b: any) => b._id !== variables.id)
+            }
+          };
+        } else if (Array.isArray(oldData.data)) {
+          // Array response
+          return {
+            ...oldData,
+            data: oldData.data.filter((b: any) => b._id !== variables.id)
+          };
+        }
+        return oldData;
+      });
+      // Also invalidate to ensure fresh data
+      qc.invalidateQueries({ queryKey: ['business'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: (error) => {
+      console.error('Reject mutation failed:', error);
+    },
   });
 }
 

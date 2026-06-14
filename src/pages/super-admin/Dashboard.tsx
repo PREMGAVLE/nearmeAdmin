@@ -37,20 +37,22 @@ export default function SuperAdminDashboard() {
   const rejectMutation = useRejectBusiness();
 
   const users = userData?.data?.items || [];
-  const categories = categoryData?.data?.items || [];
+  const categories = categoryData?.data || [];
   const businesses = businessesData?.data?.items || [];
-  const pendingBusinesses = pendingData?.items || [];
+  const pendingBusinesses = pendingData?.data?.items || [];
   const { data: pendingCategoriesData, isLoading: pendingCategoriesLoading, error: pendingCategoriesError } = useCategories({
     approvalStatus: 'pending',
     limit: 50
   });
 
-  const pendingCategories = pendingCategoriesData?.data?.items || [];
+  const pendingCategories = pendingCategoriesData?.data || [];
 
   // Add debugging
   console.log('Pending Categories Data:', pendingCategoriesData);
   console.log('Pending Categories Error:', pendingCategoriesError);
   console.log('Pending Categories Count:', pendingCategories.length);
+  console.log('Pending Businesses Data:', pendingData);
+  console.log('Pending Businesses Count:', pendingBusinesses.length);
 
   // Calculate category distribution from actual data
   const getCategoryDistribution = () => {

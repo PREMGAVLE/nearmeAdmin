@@ -20,17 +20,21 @@ export function getCategoryName(categories: Category[], categoryId: string | any
 }
 
 export function getUserName(users: User[], id: string): string {
+  if (!Array.isArray(users)) return id;
   return users.find(u => u._id === id)?.name || id;
 }
 
 export function getBusinessName(businesses: Business[], id: string): string {
+  if (!Array.isArray(businesses)) return id;
   return businesses.find(b => b._id === id)?.businessName || id;
 }
 
 export function getBusinessById(businesses: Business[], id: string): Business | undefined {
+  if (!Array.isArray(businesses)) return undefined;
   return businesses.find(b => b._id === id);
 }
 
 export function getUserById(users: User[], id: string): User | undefined {
+  if (!Array.isArray(users)) return undefined;
   return users.find(u => u._id === id);
 }

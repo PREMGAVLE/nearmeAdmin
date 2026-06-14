@@ -42,11 +42,10 @@ export default function CategoryManagement() {
     const { toast } = useToast();
     const deleteMutation = useDeleteCategory();
 
-    const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
-    const { data: usersData } = useUsers();
+const { data: categoriesData, isLoading: categoriesLoading } = useCategories({ approvalStatus: 'pending' });    const { data: usersData } = useUsers();
 
     const categories = categoriesData?.data || [];
-    const users = usersData?.data || [];
+    const users = usersData?.data?.items || [];
 
     const handleFormSuccess = () => {
         setShowForm(false);

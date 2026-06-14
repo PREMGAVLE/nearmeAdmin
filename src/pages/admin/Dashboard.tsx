@@ -251,7 +251,7 @@ const pendingCategories = pendingCategoriesData?.data || [];
         <PendingApprovalsTable
           businesses={pendingBusinesses}
           users={users}
-          categories={pendingCategories}
+          categories={categories}
           onApprove={handleApprove}
           onReject={handleReject}
           isLoading={pendingLoading}

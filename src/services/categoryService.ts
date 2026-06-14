@@ -4,9 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const categoryService = {
   getAll: async (params?: CategoryFilters): Promise<ApiResponse<Category[]>> => {
-    // Use /categories endpoint when filters are provided (e.g., createdBy, approvalStatus)
-    // Otherwise use /categories/public for approved categories only
-    const endpoint = (params && (params.createdBy || params.approvalStatus)) ? '/categories' : '/categories/public';
+    // Always use /categories endpoint for admin users to get all categories including pending
+    // /categories/public is only for public users who should only see approved categories
+    const endpoint = '/categories';
     const response = await apiClient.get(endpoint, { params });
     return response.data;
   },
