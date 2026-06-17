@@ -27,7 +27,8 @@ export default function AdsManagement() {
     const [formData, setFormData] = useState<AdFormData>({
         title: '',
         description: '',
-        type: 'banner',
+        type: 'home_slider',
+        position: 'home_banner',
         startDate: '',
         endDate: '',
         redirectUrl: '',
@@ -54,7 +55,7 @@ export default function AdsManagement() {
             // Upload image if selected
             if (imageFile) {
                 const uploadResponse = await uploadImageMutation.mutateAsync(imageFile);
-                imageUrl = uploadResponse.data.imageUrl;
+                imageUrl = uploadResponse.data.data.imageUrl;
             }
 
             const payload = { ...formData, imageUrl, isActive: formData.isActive };
@@ -87,10 +88,17 @@ export default function AdsManagement() {
             // Upload image if selected
             if (imageFile) {
                 const uploadResponse = await uploadImageMutation.mutateAsync(imageFile);
-                imageUrl = uploadResponse.data.imageUrl;
+                imageUrl = uploadResponse.data.data.imageUrl;
             }
 
-            const payload = { ...formData, imageUrl, isActive: formData.isActive };
+            // Only include imageUrl in payload if a new image was uploaded
+            const payload = { ...formData, isActive: formData.isActive };
+            if (imageFile) {
+                payload.imageUrl = imageUrl;
+            } else {
+                delete payload.imageUrl;
+            }
+
              await updateMutation.mutateAsync({ id: selectedAd._id, data: payload });
 
             toast({
@@ -147,7 +155,8 @@ export default function AdsManagement() {
         setFormData({
             title: ad.title,
             description: ad.description || '',
-            type: ad.type,
+            type: ad.adType,
+            position: ad.position || 'home_banner',
             startDate: ad.startDate.split('T')[0],
             endDate: ad.endDate.split('T')[0],
             redirectUrl: ad.redirectUrl || '',
@@ -177,6 +186,7 @@ export default function AdsManagement() {
             title: '',
             description: '',
             type: 'banner',
+            position: 'top',
             startDate: '',
             endDate: '',
             redirectUrl: '',
@@ -244,11 +254,26 @@ export default function AdsManagement() {
                                             <SelectValue placeholder="Select ad type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="banner">Banner</SelectItem>
-                                            <SelectItem value="sidebar">Sidebar</SelectItem>
-                                            <SelectItem value="popup">Popup</SelectItem>
-                                            <SelectItem value="featured">Featured</SelectItem>
-                                            <SelectItem value="category">Category</SelectItem>
+                                            <SelectItem value="home_slider">Home Slider</SelectItem>
+                                            <SelectItem value="popup_ads">Popup Ads</SelectItem>
+                                            <SelectItem value="product_slider">Product Slider</SelectItem>
+                                            <SelectItem value="listing_marketing_ads">Listing Marketing Ads</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="position">Position *</Label>
+                                    <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select position" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="home_banner">Home Banner</SelectItem>
+                                            <SelectItem value="product_ads">Product Ads</SelectItem>
+                                            <SelectItem value="footer_banner">Footer Banner</SelectItem>
+                                            <SelectItem value="listing_page_ads">Listing Page Ads</SelectItem>
+                                            <SelectItem value="profile_ads">Profile Ads</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -453,8 +478,8 @@ export default function AdsManagement() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge className={getAdTypeColor(ad.type)}>
-                                            {ad.type}
+                                        <Badge className={getAdTypeColor(ad.adType)}>
+                                            {ad.adType}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
@@ -557,11 +582,26 @@ export default function AdsManagement() {
                                         <SelectValue placeholder="Select ad type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="banner">Banner</SelectItem>
-                                        <SelectItem value="sidebar">Sidebar</SelectItem>
-                                        <SelectItem value="popup">Popup</SelectItem>
-                                        <SelectItem value="featured">Featured</SelectItem>
-                                        <SelectItem value="category">Category</SelectItem>
+                                        <SelectItem value="home_slider">Home Slider</SelectItem>
+                                        <SelectItem value="popup_ads">Popup Ads</SelectItem>
+                                        <SelectItem value="product_slider">Product Slider</SelectItem>
+                                        <SelectItem value="listing_marketing_ads">Listing Marketing Ads</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-position">Position *</Label>
+                                <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select position" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="home_banner">Home Banner</SelectItem>
+                                        <SelectItem value="product_ads">Product Ads</SelectItem>
+                                        <SelectItem value="footer_banner">Footer Banner</SelectItem>
+                                        <SelectItem value="listing_page_ads">Listing Page Ads</SelectItem>
+                                        <SelectItem value="profile_ads">Profile Ads</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

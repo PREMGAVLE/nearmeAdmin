@@ -107,6 +107,13 @@ getUserLeads: async (userId: string): Promise<any[]> => {
     const response = await apiClient.get('/users/salesman/my-users', { params });
     return response.data;
   },
+
+  // ✅ NEW: Lookup any user across the whole DB by exact mobile number
+  // (salesman allowed). Returns the user + their businesses.
+  lookupByMobile: async (mobile: string): Promise<User & { businesses?: any[]; businessCount?: number }> => {
+    const response = await apiClient.get('/users/lookup', { params: { mobile } });
+    return response.data?.data ?? response.data;
+  },
 };
 
 // ===== React Query Hooks =====
@@ -214,4 +221,11 @@ export function useUpdateProfile() {
 }
 export function useUsersBySalesman(params?: any) {
   return useQuery({ queryKey: ['salesman-users', params], queryFn: () => userService.getSalesmanUsers(params) });
+}
+
+// ✅ NEW: Lookup a user by mobile on demand (button-triggered)
+export function useLookupUserByMobile() {
+  return useMutation({
+    mutationFn: (mobile: string) => userService.lookupByMobile(mobile),
+  });
 }

@@ -16,7 +16,7 @@ import { useCategories, useCreateCategory } from '@/services/categoryService';
 
 import { useCreateBusiness, useUploadDocument, useUploadLogo } from '@/services/businessService'
 
-import { useCreateUser } from '@/services/userService';
+import { useCreateUser, useLookupUserByMobile } from '@/services/userService';
 
 import { useAppSettings } from '@/services/appSettingsService';
 
@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 import { useToast } from '@/hooks/use-toast';
 
-import { Building2, UserPlus, CheckCircle, Plus, Upload, FileText, X, Eye, EyeOff } from 'lucide-react';
+import { Building2, UserPlus, CheckCircle, Plus, Upload, FileText, X, Eye, EyeOff, AlertCircle, Phone, Mail, UserCircle, Loader2 } from 'lucide-react';
 
 import type { BusinessType } from '@/types';
 
@@ -134,6 +134,11 @@ export default function AddBusiness() {
   });
 
   const createOwnerMutation = useCreateUser();
+  const lookupMutation = useLookupUserByMobile();
+
+  // ✅ NEW: State for existing user dialog
+  const [showExistingUserDialog, setShowExistingUserDialog] = useState(false);
+  const [existingUser, setExistingUser] = useState<any>(null);
 
   // Step 2: Business form (complete backend fields)
 
@@ -456,15 +461,34 @@ export default function AddBusiness() {
 
         },
 
-        onError: (err: any) => toast({
-
-          title: 'Error',
-
-          description: err?.response?.data?.message || 'Failed to create owner',
-
-          variant: 'destructive'
-
-        }),
+        onError: (err: any) => {
+          // ✅ NEW: If mobile already exists, lookup the user and show dialog
+          if (err?.response?.status === 409 || err?.response?.data?.message?.toLowerCase().includes('mobile already exists')) {
+            lookupMutation.mutate(ownerData.mobile, {
+              onSuccess: (user) => {
+                setExistingUser(user);
+                setShowExistingUserDialog(true);
+                toast({
+                  title: 'User Already Exists',
+                  description: `Found existing user: ${user.name}. You can create a business for them.`,
+                });
+              },
+              onError: () => {
+                toast({
+                  title: 'Error',
+                  description: err?.response?.data?.message || 'Failed to create owner',
+                  variant: 'destructive'
+                });
+              }
+            });
+          } else {
+            toast({
+              title: 'Error',
+              description: err?.response?.data?.message || 'Failed to create owner',
+              variant: 'destructive'
+            });
+          }
+        },
 
       },
     );
@@ -2069,6 +2093,81 @@ export default function AddBusiness() {
         </form>
 
       )}
+
+      {/* ✅ NEW: Existing User Dialog */}
+      <Dialog open={showExistingUserDialog} onOpenChange={setShowExistingUserDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              User Already Exists
+            </DialogTitle>
+          </DialogHeader>
+          {existingUser && (
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4 bg-muted/50 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <UserCircle className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{existingUser.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      {existingUser.mobile}
+                    </div>
+                    {existingUser.email && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-3 w-3" />
+                        {existingUser.email}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {existingUser.businessCount || 0} existing business(es)
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowExistingUserDialog(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    setOwnerId(existingUser._id);
+                    setBusinessData(prev => ({
+                      ...prev,
+                      contactPersonName: existingUser.name || '',
+                      contactNumbers: {
+                        ...prev.contactNumbers,
+                        primary: existingUser.mobile || '',
+                        whatsapp: existingUser.mobile || ''
+                      },
+                      email: existingUser.email || '',
+                      address: {
+                        ...prev.address,
+                        area: existingUser.address || '',
+                        city: existingUser.city || 'Burhanpur',
+                        pincode: '450331'
+                      }
+                    }));
+                    setShowExistingUserDialog(false);
+                    setStep(2);
+                  }}
+                  className="flex-1 gradient-primary text-primary-foreground"
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Create Business
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
     </div>
 

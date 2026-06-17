@@ -1,54 +1,42 @@
 import apiClient from '@/lib/apiClient';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import type { Ad, AdFormData, AdFilters, PaginatedResponse } from '@/types';
-
-// Create a custom axios instance for ad calls
-const adsApiClient = axios.create({
-    baseURL: 'https://smartburhanpurcitybackend-production.up.railway.app/api/smart/',
-    headers: { 'Content-Type': 'application/json' },
-});
-
-// Attach JWT token to ad requests
-adsApiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('smartburhanpur_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
-// Handle errors for ad calls without global redirect
-adsApiClient.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        return Promise.reject(error);
-    }
-);
 
 export const adsService = {
     getAds: async (filters: AdFilters) => {
-        const response = await adsApiClient.get('/ads', { params: filters });
+        const response = await apiClient.get('/ads', { params: filters });
         return response.data;
     },
 
     createAd: async (payload: AdFormData) => {
-        const response = await adsApiClient.post('/ads', payload);
+        // Map frontend 'type' to backend 'adType'
+        const backendPayload = {
+            ...payload,
+            adType: payload.type
+        };
+        delete backendPayload.type;
+        const response = await apiClient.post('/ads', backendPayload);
         return response.data;
     },
 
     updateAd: async (id: string, payload: Partial<AdFormData>) => {
-        const response = await adsApiClient.patch(`/ads/${id}`, payload); // ✅ Change PUT to PATCH
+        // Map frontend 'type' to backend 'adType'
+        const backendPayload = {
+            ...payload,
+            adType: payload.type
+        };
+        if (backendPayload.type) delete backendPayload.type;
+        const response = await apiClient.patch(`/ads/${id}`, backendPayload);
         return response.data;
     },
 
     deleteAd: async (id: string) => {
-        const response = await adsApiClient.delete(`/ads/${id}`);
+        const response = await apiClient.delete(`/ads/${id}`);
         return response.data;
     },
 
     toggleAdStatus: async (id: string) => {
-        const response = await adsApiClient.patch(`/ads/${id}/activate`, { isActive: true }); // ✅ Fix endpoint
+        const response = await apiClient.patch(`/ads/${id}/activate`, { isActive: true });
         return response.data;
     },
 
@@ -56,7 +44,7 @@ export const adsService = {
         const formData = new FormData();
         formData.append('image', file);
 
-        const response = await adsApiClient.post('/ads/upload', formData, { // ✅ Fix endpoint
+        const response = await apiClient.post('/ads/upload', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return response.data;

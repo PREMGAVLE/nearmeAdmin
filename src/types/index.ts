@@ -295,14 +295,15 @@ export interface BookingFilters extends PaginationParams {
 
 
 // ===== Ad Types =====
-export type AdType = 'banner' | 'sidebar' | 'popup' | 'featured' | 'category';
+export type AdType = 'home_slider' | 'popup_ads' | 'product_slider' | 'listing_marketing_ads';
 export type AdStatus = 'active' | 'inactive' | 'expired' | 'scheduled';
 
 export interface Ad {
   _id: string;
   title: string;
   description?: string;
-  type: AdType;
+  adType: AdType;
+  position: 'home_banner' | 'product_ads' | 'footer_banner' | 'listing_page_ads' | 'profile_ads';
   status: AdStatus;
   imageUrl?: string;
   redirectUrl?: string;
@@ -322,6 +323,7 @@ export interface AdFormData {
   title: string;
   description?: string;
   type: AdType;
+  position: 'home_banner' | 'product_ads' | 'footer_banner' | 'listing_page_ads' | 'profile_ads';
   startDate: string;
   endDate: string;
   redirectUrl?: string;
